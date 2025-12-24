@@ -1,5 +1,7 @@
 // --- CONFIGURAZIONE ---
 const PASSWORD_ADMIN = "1234";
+
+// LINK DB
 const BASE_URL_DB = "https://console.firebase.google.com/project/inventario-lab-rainerum/firestore/databases/-default-/data/~2Fattrezzature";
 
 const firebaseConfig = {
@@ -11,6 +13,7 @@ const firebaseConfig = {
     appId: "1:1089947549262:web:1d02f48d03cada06994d1f"
 };
 
+// Inizializzazione Classica (senza import)
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
@@ -44,8 +47,9 @@ function eseguiEliminazione() {
     const pass = document.getElementById("inputPassDelete").value;
     if (pass === PASSWORD_ADMIN) {
         if (idCorrente) {
-            alert("✅ Password corretta! Apro il database.");
-            window.location.href = BASE_URL_DB + "~2F" + idCorrente;
+            const linkFinale = BASE_URL_DB + "~2F" + idCorrente;
+            alert("✅ Password corretta! Apro il database per l'eliminazione.");
+            window.location.href = linkFinale;
         } else {
             alert("Errore: Nessun ID selezionato.");
         }
@@ -79,6 +83,7 @@ function inizializzaArmadi() {
     if(!sel) return;
     sel.innerHTML = '<option value="">Scegli Armadio...</option>';
     if(fil) fil.innerHTML = '<option value="tutti">Tutti gli Armadi</option>';
+    
     if(window.CONFIGURAZIONE && window.CONFIGURAZIONE.armadi) {
         window.CONFIGURAZIONE.armadi.forEach(arm => {
             sel.innerHTML += `<option value="${arm.id}">${arm.id} - ${arm.nome}</option>`;
@@ -87,6 +92,7 @@ function inizializzaArmadi() {
     }
 }
 
+// Lettura dati in tempo reale
 dbCollection.onSnapshot((snapshot) => {
     listaAttrezzi = [];
     snapshot.forEach((doc) => {
@@ -102,11 +108,10 @@ function renderizza(lista) {
     aggiornaOpzioniCategorie();
 
     if(lista.length === 0) {
-        container.innerHTML = "<p style='text-align:center'>Nessuna attrezzatura trovata.</p>";
+        container.innerHTML = "<p style='text-align:center; color:#666;'>Nessuna attrezzatura trovata.</p>";
         return;
     }
     
-    // Ordina A-Z
     lista.sort((a,b) => (a.nome || "").toLowerCase().localeCompare((b.nome || "").toLowerCase()));
 
     lista.forEach(item => {
@@ -114,25 +119,27 @@ function renderizza(lista) {
         div.className = "card";
         
         let catHtml = "";
-        if(item.categoria) {
-            catHtml = `<span class="badge-cat">${item.categoria}</span>`;
-        }
+        if(item.categoria) catHtml = `<span class="badge-cat">${item.categoria}</span>`;
 
-        // Mostra Capienza e Sensibilità se presenti
+        let cap = item.capienza || "";
+        let sens = item.sensibilita || "";
+
         let techHtml = "";
-        if(item.capienza || item.sensibilita) {
-            let parts = [];
-            if(item.capienza) parts.push(`Cap: <b>${item.capienza}</b>`);
-            if(item.sensibilita) parts.push(`Sens: <b>${item.sensibilita}</b>`);
-            techHtml = `<div class="tech-details">${parts.join(" - ")}</div>`;
-        }
+        let parts = [];
+        if(cap) parts.push(`Cap: <b>${cap}</b>`);
+        if(sens) parts.push(`Sens: <b>${sens}</b>`);
+        if(parts.length > 0) techHtml = `<div class="tech-details">${parts.join(" - ")}</div>`;
+
+        let arm = item.armadio || "?";
+        let rip = item.ripiano || "?";
+        let quad = item.quadrante || "-";
 
         div.innerHTML = `
             <h3>${item.nome}</h3>
             ${catHtml}
             ${techHtml}
             <div style="font-size:0.9em; color:#666; margin-bottom:5px;">
-                Pos: <b>${item.armadio}.${item.ripiano}</b> (Q.${item.quadrante})
+                Pos: <b>${arm}.${rip}</b> (Q.${quad})
             </div>
             <div style="margin-bottom:10px;">Qta: <strong>${item.quantita}</strong></div>
             <div style="display:flex; justify-content:flex-end; align-items:center;">
@@ -166,11 +173,8 @@ function apriModaleNuovo() {
     document.getElementById("selectCategoriaEsistente").value = "";
     document.getElementById("inputQuantita").value = "";
     document.getElementById("inputQuadrante").value = "";
-    
-    // Reset Nuovi Campi
     document.getElementById("inputCapienza").value = "";
     document.getElementById("inputSensibilita").value = "";
-
     document.getElementById("selectArmadio").value = "";
     document.getElementById("selectRipiano").innerHTML = "<option value=''>Ripiano...</option>";
     document.getElementById("selectRipiano").disabled = true;
@@ -187,21 +191,21 @@ function apriModifica(id) {
     if(!obj) return;
 
     document.getElementById("titoloModale").innerText = "Modifica " + obj.nome;
-    document.getElementById("inputNome").value = obj.nome;
     
+    document.getElementById("inputNome").value = obj.nome;
     document.getElementById("inputCategoria").value = obj.categoria || ""; 
     document.getElementById("selectCategoriaEsistente").value = ""; 
-
     document.getElementById("inputQuantita").value = obj.quantita;
-    document.getElementById("inputQuadrante").value = obj.quadrante;
-    
-    // Carica Nuovi Campi
+    document.getElementById("inputQuadrante").value = obj.quadrante || "";
     document.getElementById("inputCapienza").value = obj.capienza || "";
     document.getElementById("inputSensibilita").value = obj.sensibilita || "";
+    
+    const arm = obj.armadio;
+    const rip = obj.ripiano;
 
-    document.getElementById("selectArmadio").value = obj.armadio;
+    document.getElementById("selectArmadio").value = arm;
     aggiornaRipiani();
-    setTimeout(() => { document.getElementById("selectRipiano").value = obj.ripiano; }, 50);
+    setTimeout(() => { document.getElementById("selectRipiano").value = rip; }, 50);
 
     document.getElementById("panelPassword").style.display = "none";
     document.getElementById("footerNormal").style.display = "flex";
@@ -213,6 +217,8 @@ function chiudiModale() {
     document.getElementById("modalAttrezzo").style.display = "none";
 }
 
+// --- FUNZIONI ID & SALVATAGGIO ---
+
 function formattaNome(str) {
     if (!str) return "";
     return str.toLowerCase().replace(/(^|\s)\S/g, function(lettera) {
@@ -220,17 +226,22 @@ function formattaNome(str) {
     });
 }
 
+function generaID(nome, armadio, ripiano, quadrante) {
+    const n = String(nome || "").toLowerCase().trim().replace(/\s+/g, '');
+    const a = String(armadio || "").toLowerCase().trim().replace(/\s+/g, '');
+    const r = String(ripiano || "").toLowerCase().trim().replace(/\s+/g, '');
+    const q = String(quadrante || "").toLowerCase().trim().replace(/\s+/g, '');
+    return `${n}_${a}_${r}_${q}`;
+}
+
 function salvaAttrezzatura() {
     let nomeGrezzo = document.getElementById("inputNome").value.trim();
     const nome = formattaNome(nomeGrezzo); 
     const categoria = document.getElementById("inputCategoria").value.trim(); 
-
     const arm = document.getElementById("selectArmadio").value;
     const rip = String(document.getElementById("selectRipiano").value);
     const quad = document.getElementById("inputQuadrante").value.trim();
     const qta = document.getElementById("inputQuantita").value.trim();
-    
-    // Nuovi valori
     const cap = document.getElementById("inputCapienza").value.trim();
     const sens = document.getElementById("inputSensibilita").value.trim();
 
@@ -239,27 +250,24 @@ function salvaAttrezzatura() {
     const btn = document.getElementById("btnSalva");
     btn.innerHTML = "Attendi..."; btn.disabled = true;
     
+    // Genera ID "intelligente"
     const customID = generaID(nome, arm, rip, quad);
     const docRef = dbCollection.doc(customID);
 
     docRef.get().then((docSnap) => {
-        let esiste = false;
-        if(typeof docSnap.exists === 'function') esiste = docSnap.exists();
-        else esiste = docSnap.exists;
+        let esiste = docSnap.exists;
 
         if (esiste) {
+            // Se esiste già un oggetto con questo ID preciso
             if (!idCorrente) {
-                alert(`⛔ ATTENZIONE: "${nome}" ESISTE GIÀ!\n\nSi trova nell'Armadio ${arm}, Ripiano ${rip}.`);
+                alert(`⛔ ATTENZIONE: "${nome}" ESISTE GIÀ QUI!\nNon creare doppioni.`);
                 return; 
             }
             if (idCorrente !== customID) {
-                 if(confirm(`Spostando questo oggetto, andrà a unirsi a un "${nome}" già presente.\n\nVuoi unire le quantità?`)) {
+                 if(confirm(`Spostando questo oggetto si unirà a un altro già presente.\nVuoi procedere?`)) {
                     return docRef.update({ 
                         quantita: docSnap.data().quantita + " + " + qta,
-                        nome: nome,
-                        categoria: categoria,
-                        capienza: cap,       // Aggiorna anche questi dati
-                        sensibilita: sens
+                        nome: nome, categoria: categoria, capienza: cap, sensibilita: sens
                     }).then(() => {
                         if(idCorrente) return dbCollection.doc(idCorrente).delete();
                     });
@@ -269,6 +277,7 @@ function salvaAttrezzatura() {
         
         if (!esiste || (esiste && idCorrente === customID)) {
             const promesse = [];
+            // Se ID cambia, cancella vecchio
             if(idCorrente && idCorrente !== customID) promesse.push(dbCollection.doc(idCorrente).delete());
             
             promesse.push(docRef.set({
@@ -276,7 +285,7 @@ function salvaAttrezzatura() {
                 categoria: categoria,
                 armadio: arm, ripiano: rip, quadrante: quad, 
                 quantita: qta,
-                capienza: cap,      // Salva nuovi dati
+                capienza: cap,
                 sensibilita: sens
             }));
             return Promise.all(promesse);
@@ -284,16 +293,8 @@ function salvaAttrezzatura() {
     }).then(() => { 
         if(btn.innerHTML !== "Salva") chiudiModale(); 
     }).catch((e) => {
-        if(e.message !== "Annullato") alert("Errore o Annullato: " + e.message);
+        if(e.message !== "Annullato") alert("Errore: " + e.message);
     }).finally(() => { btn.innerHTML = "Salva"; btn.disabled = false; });
-}
-
-function generaID(nome, armadio, ripiano, quadrante) {
-    const n = String(nome || "").toLowerCase().trim().replace(/\s+/g, '');
-    const a = String(armadio || "").toLowerCase().trim().replace(/\s+/g, '');
-    const r = String(ripiano || "").toLowerCase().trim().replace(/\s+/g, '');
-    const q = String(quadrante || "").toLowerCase().trim().replace(/\s+/g, '');
-    return `${n}_${a}_${r}_${q}`;
 }
 
 function applicaFiltri() {
@@ -307,7 +308,7 @@ function applicaFiltri() {
     renderizza(filtrati);
 }
 
-// Globali
+// Export Globale (non serve module.exports, le funzioni sono globali in questo modo)
 window.apriModaleNuovo = apriModaleNuovo;
 window.apriModifica = apriModifica;
 window.chiudiModale = chiudiModale;

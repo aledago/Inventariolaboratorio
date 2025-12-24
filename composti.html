@@ -4,148 +4,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventario Chimico</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- STILI GENERALI --- */
+        /* Piccoli aggiustamenti specifici per Chimica */
+        .card { border-left: 6px solid #8b5cf6 !important; }
+        .formula-text { font-family: 'Courier New', monospace; font-weight: 700; color: #7c3aed; background: #f5f3ff; padding: 2px 6px; border-radius: 4px; }
+        .scaduto-label { color: #dc2626; float: right; background: #fef2f2; padding: 2px 8px; border-radius: 10px; border: 1px solid #fecaca; font-size: 0.8em; font-weight: bold;}
+        .btn-edit { background-color: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-left: auto; }
         
-        /* Stili per il modale - Footer */
-        .modal-footer { 
-            display: flex; 
-            align-items: center; /* Allinea verticalmente i bottoni */
-            justify-content: center;
-            gap: 15px;       
-            margin-top: 20px; 
-            width: 100%;
-        }
-
-        /* REGOLA PER I PULSANTI GEMELLI */
-        .modal-footer button {
-            flex: 1;                 /* Li obbliga ad occupare lo stesso spazio */
-            height: 50px !important; /* Forza l'altezza uguale per tutti */
-            margin: 0 !important;    /* Rimuove margini invisibili */
-            padding: 0;              
-            border-radius: 6px;
-            cursor: pointer;
-            border: none !important;
-            
-            /* Centratura del testo perfetta */
-            display: flex;    
-            align-items: center;
-            justify-content: center;
-            
-            font-size: 16px; 
-            font-weight: bold;
-            text-transform: uppercase; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            color: white; 
-        }
-
-        /* Colori specifici */
-        .btn-delete { 
-            background: #e74c3c; 
-        }
-        .btn-delete:hover { background: #c0392b; }
-
-        .btn-save { 
-            background: #2ecc71; 
-        }
-        .btn-save:hover { background: #27ae60; }
-
-        /* Pannello password */
-        #panelPassword {
-            display: none; 
-            background: #ffecec; 
-            border: 1px solid #e74c3c; 
-            padding: 15px; 
-            margin-top: 15px; 
-            border-radius: 5px;
-            text-align: center;
-        }
-        
-        #inputPassDelete {
-            height: 40px;
-            font-size: 18px;
-            padding: 5px;
-            text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 60%;
-            margin-bottom: 10px;
-        }
+        /* Nasconde il pannello password inizialmente */
+        #panelPassword { display: none; background: #fef2f2; padding: 15px; border-radius: 8px; border: 1px solid #fecaca; text-align: center; margin-top: 10px; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <nav class="navbar">
-            <a href="index.html" class="nav-link">🧪 Attrezzatura</a>
-            <a href="composti.html" class="nav-link active">☣️ Composti Chimici</a>
+            <a href="index.html" class="nav-link">📦 Attrezzatura</a>
+            <a href="composti.html" class="nav-link active">☣️ Chimica</a>
             <a href="mappa.html" class="nav-link">🗺️ Mappa</a>
         </nav>
 
         <div class="header-row">
-            <h1>Inventario Chimici</h1>
+            <h1>Inventario Chimico</h1>
             <button class="btn-add" onclick="apriModaleNuovo()">
-                <i class="fas fa-plus"></i> Nuovo Composto
+                <i class="fas fa-plus"></i> <span>Nuovo</span>
             </button>
         </div>
 
         <div class="filter-section">
-            <input type="text" id="cercaChimico" placeholder="Cerca nome o formula..." onkeyup="applicaFiltri()">
-            <select id="filtroArmadioRapido" onchange="applicaFiltri()" style="padding: 10px;">
-                <option value="tutti">Tutti gli Armadi</option>
+            <input type="text" id="cercaComposto" placeholder="Cerca..." onkeyup="filtraComposti()">
+            <select id="filtroArmadio" onchange="filtraComposti()">
+                <option value="tutti">Tutti</option>
             </select>
         </div>
 
-        <div id="listaChimici" class="grid-container">
-            <p style="text-align:center;">Caricamento database...</p>
+        <div id="listaComposti" class="grid-container">
+            <p style="text-align:center; margin-top:20px;">Caricamento...</p>
         </div>
     </div>
 
-    <div id="modalChimico" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="chiudiModale()">&times;</span>
-            <h2 id="titoloModale">Gestione Composto</h2>
+    <div id="modalComposto" class="modal" style="display:none;"> <div class="modal-content">
+            <span class="close-btn" onclick="chiudiModale()" style="float:right; cursor:pointer; font-size:1.5em;">&times;</span>
+            <h3 id="titoloModale" style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:20px;">Gestione</h3>
             
-            <label>Nome:</label>
-            <input type="text" id="inputNome" placeholder="Es. Acido Solforico" style="width: 100%; margin-bottom: 10px; padding: 8px;">
-            
-            <label>Formula:</label>
-            <input type="text" id="inputFormula" placeholder="Es. H2SO4" style="width: 100%; margin-bottom: 10px; padding: 8px;">
-            
-            <label>Posizione:</label>
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <select id="selectArmadio" onchange="aggiornaRipiani()" style="flex:1; padding: 8px;"></select>
-                <select id="selectRipiano" disabled style="flex:1; padding: 8px;"></select>
-                <input type="text" id="inputQuadrante" placeholder="Quad." style="width: 60px; padding: 8px;">
-            </div>
+            <div class="modal-grid">
+                
+                <div class="form-group full-width">
+                    <label>Nome Reagente *</label>
+                    <input type="text" id="inputNome" class="form-control" placeholder="Es. Acido Solforico">
+                </div>
 
-            <label>Quantità:</label>
-            <input type="text" id="inputQuantita" placeholder="Es. 500g" style="width: 100%; margin-bottom: 10px; padding: 8px;">
-            
-            <label>Link Scheda Sicurezza:</label>
-            <input type="url" id="inputLink" placeholder="Incolla link PDF" style="width: 100%; margin-bottom: 10px; padding: 8px;">
+                <div class="left-col-group">
+                    <div class="form-group">
+                        <label>Formula Chimica</label>
+                        <input type="text" id="inputFormula" class="form-control" placeholder="Es. H2SO4">
+                    </div>
+                    <div class="form-group">
+                        <label>Scadenza</label>
+                        <input type="date" id="inputScadenza" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Link SDS (PDF)</label>
+                        <input type="url" id="inputLink" class="form-control" placeholder="https://...">
+                    </div>
+                </div>
 
-            <div id="panelPassword">
-                <p style="margin:0 0 10px 0; color:#c0392b; font-weight:bold;">⚠️ Password Amministratore</p>
-                <input type="password" id="inputPassDelete" placeholder="Codice" style="padding:8px; width:60%; text-align:center;">
-                <button type="button" onclick="eseguiEliminazione()" style="padding:8px; background:#c0392b; color:white; border:none; cursor:pointer;">APRI DB</button>
-                <br>
-                <small onclick="annullaEliminazione()" style="cursor:pointer; text-decoration:underline; color:#555; display:block; margin-top:5px;">Annulla</small>
-            </div>
+                <div class="right-col-group">
+                    <div class="form-group">
+                        <label>Armadio *</label>
+                        <select id="selectArmadio" class="form-control" onchange="aggiornaRipiani()"></select>
+                    </div>
+                    <div class="form-group" style="display:flex; gap:10px;">
+                        <div style="flex:1">
+                            <label>Ripiano</label>
+                            <select id="selectRipiano" class="form-control" disabled></select>
+                        </div>
+                        <div style="flex:1">
+                            <label>Quad.</label>
+                            <input type="text" id="inputQuadrante" class="form-control" style="text-align:center;" placeholder="A1">
+                        </div>
+                    </div>
+                </div>
 
-            <div class="modal-footer" id="footerNormal">
-                <button type="button" class="btn-delete" id="btnMostraPanel" onclick="mostraPanelElimina()">ELIMINA</button>
-                <button type="button" class="btn-save" id="btnSalva" onclick="salvaChimico()">Salva</button>
-            </div>
-        </div>
+                <div class="full-width">
+                    <div id="panelPassword">
+                        <p style="margin:0 0 5px 0; color:#dc2626; font-weight:bold;">Password Admin</p>
+                        <input type="password" id="inputPassDelete" class="form-control" placeholder="Codice" style="width:50%; display:inline-block;">
+                        <button type="button" onclick="confermaEliminazione()" style="background:#dc2626; color:white; border:none; padding:10px; border-radius:6px;">OK</button>
+                        <br>
+                        <small onclick="annullaEliminazione()" style="cursor:pointer; text-decoration:underline;">Annulla</small>
+                    </div>
+
+                    <div class="modal-footer" id="footerButtons">
+                        <button type="button" class="btn-delete" id="btnElimina" onclick="mostraPasswordPanel()">ELIMINA</button>
+                        <button class="btn-save" id="btnSalva" onclick="salvaComposto()">SALVA</button>
+                    </div>
+                </div>
+
+            </div> </div>
     </div>
 
     <script src="config_lab.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="script_composti.js"></script> 
-
+    
+    <script>
+        // Logica UI Eliminazione
+        function mostraPasswordPanel() {
+            document.getElementById('footerButtons').style.display = 'none';
+            document.getElementById('panelPassword').style.display = 'block';
+        }
+        function annullaEliminazione() {
+            document.getElementById('panelPassword').style.display = 'none';
+            document.getElementById('footerButtons').style.display = 'flex';
+            document.getElementById('inputPassDelete').value = '';
+        }
+        function confermaEliminazione() {
+            const pass = document.getElementById('inputPassDelete').value;
+            if(pass === "1234") { eliminaComposto(); } else { alert("Password Errata!"); }
+        }
+    </script>
 </body>
 </html>
