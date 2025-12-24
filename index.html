@@ -3,129 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestione Laboratorio</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Inventario Attrezzature</title>
+    <link rel="stylesheet" href="style.css"> 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        .modal-footer {
-            display: flex;
-            justify-content: space-between;
+        /* --- FIX 1: MENU ALLINEATO --- */
+        .navbar {
+            display: flex;             
+            align-items: center;       
+            justify-content: flex-start; 
+            gap: 15px;                 
+        }
+        .nav-link {
+            display: inline-flex;      
             align-items: center;
-            margin-top: 25px;
-            padding-top: 15px;
+            height: 40px;              
+            padding: 0 15px;
+            text-decoration: none;
+        }
+
+        /* --- STILI CARDS --- */
+        .card { border-left: 5px solid #e67e22 !important; }
+        .badge-cat {
+            display: inline-block; background: #fdf2e9; color: #d35400;       
+            padding: 2px 8px; border-radius: 12px; font-size: 0.8em;
+            font-weight: bold; margin-bottom: 5px; text-transform: uppercase;
+            border: 1px solid #fae5d3;
+        }
+        .tech-details { font-size: 0.85em; color: #7f8c8d; font-style: italic; margin-bottom: 5px; }
+
+        /* --- STILI FORM DEL MODALE --- */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 0.95em; }
+        
+        .form-control {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
+            transition: border-color 0.2s; box-sizing: border-box;
+        }
+        .form-control:focus { border-color: #e67e22; outline: none; }
+
+        /* Griglia interna al form */
+        .form-row { display: flex; gap: 15px; }
+        .col-half { flex: 1; } 
+        .col-third { flex: 2; }
+        .col-small { flex: 1; }
+
+        /* --- FIX 2: PULSANTI MODALE PERFETTI --- */
+        .modal-footer { 
+            display: flex; 
+            gap: 15px;          
+            margin-top: 25px; 
+            width: 100%; 
+            padding-top: 15px; 
             border-top: 1px solid #eee;
         }
-        .btn-delete {
-            background-color: #e74c3c;
-            color: white;
-            padding: 10px 15px;
+        .modal-footer button {
+            flex: 1;            
+            height: 50px;       
+            border-radius: 6px; 
+            cursor: pointer; 
             border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            display: none;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; font-weight: bold; text-transform: uppercase; color: white; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            margin: 0;          
         }
-        .btn-delete:hover { background-color: #c0392b; }
-        .btn-save { padding: 10px 20px; }
+
+        .btn-delete { background: #e74c3c; display: none; /* Gestito da JS */ }
+        .btn-delete:hover { background: #c0392b; }
+        
+        .btn-save { background: #2ecc71; }
+        .btn-save:hover { background: #27ae60; }
+
+        /* Pannello Password */
+        #panelPassword {
+            display: none; background: #ffecec; border: 1px solid #e74c3c; 
+            padding: 15px; margin-top: 15px; border-radius: 5px; text-align: center;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
         <nav class="navbar">
-            <a href="index.html" class="nav-link active">🧪 Attrezzatura</a>
+            <a href="index.html" class="nav-link active">📦 Attrezzatura</a>
             <a href="composti.html" class="nav-link">☣️ Composti Chimici</a>
             <a href="mappa.html" class="nav-link">🗺️ Mappa</a>
         </nav>
 
         <div class="header-row">
-            <h1>Inventario Attrezzatura</h1>
+            <h1>Inventario Attrezzature</h1>
             <button class="btn-add" onclick="apriModaleNuovo()">
-                <i class="fas fa-plus"></i> Aggiungi Attrezzatura
+                <i class="fas fa-plus"></i> Nuova Attrezzatura
             </button>
         </div>
 
         <div class="filter-section">
-            <input type="text" id="cercaNome" placeholder="Cerca oggetto..." onkeyup="applicaFiltri()">
+            <input type="text" id="cercaAttrezzo" placeholder="Cerca attrezzatura..." onkeyup="applicaFiltri()">
             
-            <div class="filter-group">
-                <label>Filtra per Categoria:</label>
-                <select id="filtroCategoria" onchange="applicaFiltri()">
-                    <option value="tutti">Tutte le categorie</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label>Filtra per Armadio:</label>
-                <select id="filtroArmadio" onchange="applicaFiltri()">
-                    <option value="tutti">Tutti gli armadi</option>
-                </select>
-            </div>
+            <select id="filtroArmadioRapido" onchange="applicaFiltri()" style="padding: 10px;">
+                <option value="tutti">Tutti gli Armadi</option>
+            </select>
         </div>
 
-        <div id="listaOggetti" class="grid-container">
-            <p style="text-align:center; width:100%;">Caricamento...</p>
+        <div id="listaAttrezzi" class="grid-container">
+            <p style="text-align:center;">Caricamento database...</p>
         </div>
     </div>
 
-    <div id="modalModifica" class="modal">
+    <div id="modalAttrezzo" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="chiudiModale()">&times;</span>
-            <h2 id="titoloModale">Gestione Oggetto</h2>
+            <h2 id="titoloModale" style="margin-top:0; border-bottom:1px solid #eee; padding-bottom:15px; margin-bottom:20px;">Gestione Attrezzatura</h2>
             
-            <div class="control-group">
+            <div class="form-group">
+                <label>Nome Strumento:</label>
+                <input type="text" id="inputNome" class="form-control" placeholder="Es. Becher Graduato">
+            </div>
+            
+            <div class="form-group">
                 <label>Categoria:</label>
-                <div style="display:flex; gap:10px;">
-                    <select id="selectCategoriaEsistente" onchange="copiaCategoria()" style="flex:1;">
+                <div class="form-row">
+                    <select id="selectCategoriaEsistente" class="form-control col-half" onchange="copiaCategoria()">
                         <option value="">-- Scegli esistente --</option>
                     </select>
-                    <input type="text" id="inputCategoria" placeholder="O scrivi nuova..." style="flex:1;">
+                    <input type="text" id="inputCategoria" class="form-control col-half" placeholder="O scrivi nuova...">
                 </div>
             </div>
-
-            <div class="control-group">
-                <label>Nome Strumento:</label>
-                <input type="text" id="inputNome" placeholder="Es. Beuta">
-            </div>
-
-            <div class="control-group">
+            
+            <div class="form-group">
                 <label>Posizione:</label>
-                <div style="display:flex; gap:10px;">
-                    <select id="selectArmadio" onchange="aggiornaRipiani()" style="flex:1; padding:10px;">
-                        <option value="">Scegli Armadio...</option>
-                    </select>
-                    <select id="selectRipiano" style="flex:1; padding:10px;" disabled>
-                        <option value="">Ripiano...</option>
-                    </select>
+                <div class="form-row">
+                    <select id="selectArmadio" class="form-control col-third" onchange="aggiornaRipiani()"></select>
+                    <select id="selectRipiano" class="form-control col-third" disabled></select>
+                    <input type="text" id="inputQuadrante" class="form-control col-small" placeholder="Quad." style="text-align:center;">
                 </div>
             </div>
 
-            <div class="control-group">
+            <div class="form-group">
                 <label>Quantità:</label>
-                <div class="quantity-wrapper">
-                    <button class="btn-qty" onclick="cambiaQuantita(-1)"><i class="fas fa-minus"></i></button>
-                    <input type="number" id="inputQuantita" value="0">
-                    <button class="btn-qty" onclick="cambiaQuantita(1)"><i class="fas fa-plus"></i></button>
+                <input type="text" id="inputQuantita" class="form-control" placeholder="Es. 5 pz">
+            </div>
+
+            <div class="form-group">
+                <div class="form-row">
+                    <div class="col-half">
+                        <label>Capienza (Max):</label>
+                        <input type="text" id="inputCapienza" class="form-control" placeholder="Es. 500ml">
+                    </div>
+                    <div class="col-half">
+                        <label>Sensibilità:</label>
+                        <input type="text" id="inputSensibilita" class="form-control" placeholder="Es. ±1ml">
+                    </div>
                 </div>
             </div>
-
-            <div class="control-group">
-                <label>Dettagli (Opzionali):</label>
-                <input type="text" id="inputSensibilita" placeholder="Sensibilità (es. ±1 ml)">
-                <input type="number" id="inputCapienza" placeholder="Capienza (es. 100)" style="margin-top:5px;">
+            
+            <div id="panelPassword">
+                <p style="margin:0 0 10px 0; color:#c0392b; font-weight:bold;">⚠️ Password Amministratore</p>
+                <input type="password" id="inputPassDelete" class="form-control" placeholder="Codice (1234)" style="width:50%; display:inline-block; text-align:center; margin-bottom:10px;">
+                <br>
+                <button onclick="eseguiEliminazione()" style="padding:10px 20px; background:#c0392b; color:white; border:none; cursor:pointer; border-radius:4px;">CONFERMA ELIMINAZIONE</button>
+                <br>
+                <small onclick="annullaEliminazione()" style="cursor:pointer; text-decoration:underline; color:#555; display:block; margin-top:10px;">Annulla</small>
             </div>
 
-            <div class="modal-footer">
-                <button type="button" class="btn-delete" id="btnElimina" onclick="eliminaOggettoCorrente()">
-                    <i class="fas fa-trash"></i> Elimina
-                </button>
-                <button class="btn-save" id="btnSalva" onclick="salvaModifiche()">
-                    <i class="fas fa-save"></i> Salva su Cloud
-                </button>
+            <div class="modal-footer" id="footerNormal">
+                <button type="button" class="btn-delete" id="btnMostraPanel" onclick="mostraPanelElimina()">ELIMINA</button>
+                <button class="btn-save" id="btnSalva" onclick="salvaAttrezzatura()">SALVA</button>
             </div>
         </div>
     </div>
 
-    <script src="config_lab.js"></script> 
-    <script type="module" src="script.js"></script> 
+    <script src="config_lab.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script> 
+
 </body>
 </html>

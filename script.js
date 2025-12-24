@@ -1,7 +1,7 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// --- CONFIGURAZIONE ---
+const PASSWORD_ADMIN = "1234";
+const BASE_URL_DB = "https://console.firebase.google.com/project/inventario-lab-rainerum/firestore/databases/-default-/data/~2Fattrezzature";
 
-// CONFIGURAZIONE FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyDjXP6cMEnIJZQdSwz7KE9UVGS65L3p1-I",
     authDomain: "inventario-lab-rainerum.firebaseapp.com",
@@ -11,302 +11,310 @@ const firebaseConfig = {
     appId: "1:1089947549262:web:1d02f48d03cada06994d1f"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const dbCollection = collection(db, "inventario"); 
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.firestore();
+const dbCollection = db.collection("attrezzature"); 
 
-let inventario = [];
-let oggettoCorrenteId = null;
+let listaAttrezzi = [];
+let idCorrente = null;
 
-// --- AVVIO ---
 document.addEventListener("DOMContentLoaded", () => {
-    inizializzaSelectArmadi();
-});
-
-// --- CARICAMENTO DATI ---
-onSnapshot(dbCollection, (snapshot) => {
-    inventario = [];
-    snapshot.forEach((doc) => {
-        const d = doc.data();
-        inventario.push({ 
-            ...d, 
-            id: doc.id,
-            // Normalizzazione dati
-            categoria: d.categoria || "",
-            nome: d.nome || "",
-            posizione_armadio: d.posizione_armadio || d.armadio || "",
-            posizione_ripiano: String(d.posizione_ripiano || d.ripiano || ""), // Forza stringa
-            quantita: Number(d.quantita) || 0,
-            capacita: d.capacita || "",
-            sensibilita: d.sensibilita || ""
-        });
-    });
-    aggiornaTutto();
-});
-
-function aggiornaTutto() {
-    popolaFiltri();             
-    aggiornaOpzioniCategorie(); 
-    applicaFiltri();            
-}
-
-// Funzione per pulire stringhe (per stacking)
-function normalizza(str) {
-    return String(str || "").toLowerCase().trim().replace(/\s+/g, '');
-}
-
-// --- CONFIGURAZIONE ARMADI ---
-function inizializzaSelectArmadi() {
-    const selArmadio = document.getElementById("selectArmadio");
-    if(!selArmadio) return;
-
-    selArmadio.innerHTML = '<option value="">Scegli Armadio...</option>';
-    
-    if(window.CONFIGURAZIONE && window.CONFIGURAZIONE.armadi) {
-        window.CONFIGURAZIONE.armadi.forEach(arm => {
-            const opt = document.createElement("option");
-            opt.value = arm.id;
-            opt.textContent = `${arm.id} - ${arm.nome}`;
-            selArmadio.appendChild(opt);
-        });
+    inizializzaArmadi();
+    window.onclick = function(e) { 
+        if(e.target == document.getElementById("modalAttrezzo")) chiudiModale(); 
     }
+});
+
+// --- UI & PASSWORD ---
+function mostraPanelElimina() {
+    document.getElementById("footerNormal").style.display = "none";
+    document.getElementById("panelPassword").style.display = "block";
+    document.getElementById("inputPassDelete").value = "";
+    document.getElementById("inputPassDelete").focus();
 }
 
-window.aggiornaRipiani = function() {
-    const idArmadio = document.getElementById("selectArmadio").value;
-    const selRipiano = document.getElementById("selectRipiano");
-    
-    selRipiano.innerHTML = '<option value="">Ripiano...</option>';
-    selRipiano.disabled = true;
+function annullaEliminazione() {
+    document.getElementById("panelPassword").style.display = "none";
+    document.getElementById("footerNormal").style.display = "flex";
+}
 
-    if (!idArmadio || !window.CONFIGURAZIONE) return;
-
-    const armadio = window.CONFIGURAZIONE.armadi.find(a => a.id === idArmadio);
-    
-    if (armadio) {
-        selRipiano.disabled = false;
-        for (let i = 1; i <= armadio.ripiani; i++) {
-            const opt = document.createElement("option");
-            opt.value = String(i); // Importante: forza stringa
-            const etichetta = armadio.tipo === 'cassetto' ? 'Cassetto' : 'Ripiano';
-            opt.textContent = `${etichetta} ${i}`;
-            selRipiano.appendChild(opt);
+function eseguiEliminazione() {
+    const pass = document.getElementById("inputPassDelete").value;
+    if (pass === PASSWORD_ADMIN) {
+        if (idCorrente) {
+            alert("✅ Password corretta! Apro il database.");
+            window.location.href = BASE_URL_DB + "~2F" + idCorrente;
+        } else {
+            alert("Errore: Nessun ID selezionato.");
         }
+    } else {
+        alert("⛔ Password Errata!");
+        document.getElementById("inputPassDelete").value = "";
     }
 }
 
-// --- RENDER ---
-function renderizzaOggetti(lista) {
-    const contenitore = document.getElementById("listaOggetti");
-    contenitore.innerHTML = ""; 
-
-    if (lista.length === 0) {
-        contenitore.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #666;">Nessun oggetto trovato.</p>';
-        return;
-    }
-
-    lista.forEach(obj => {
-        const card = document.createElement("div");
-        card.className = "card";
-        
-        const catBadge = obj.categoria 
-            ? `<span style="background:#e8f8f5; color:#1abc9c; padding:3px 8px; border-radius:4px; font-size:0.8em; font-weight:bold; margin-right:5px; text-transform:uppercase;">${obj.categoria}</span>` 
-            : '';
-
-        const posizioneDisplay = `${obj.posizione_armadio}.${obj.posizione_ripiano}`;
-
-        card.innerHTML = `
-            <div style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-                ${catBadge}
-                <span class="location-badge"><i class="fas fa-box-archive"></i> ${posizioneDisplay}</span>
-            </div>
-            
-            <h3 style="margin-top:0;">${obj.nome}</h3>
-            <p><strong>Capacità:</strong> ${obj.capacita || "-"}</p>
-            <p style="font-size: 1.1em; margin: 10px 0;">Quantità: <strong>${obj.quantita}</strong></p>
-            
-            <button class="btn-edit" onclick="window.apriModaleModifica('${obj.id}')">
-                <i class="fas fa-edit"></i> Gestisci
-            </button>
-        `;
-        contenitore.appendChild(card);
-    });
-}
-
-// --- FILTRI ---
-function popolaFiltri() {
-    const selCat = document.getElementById("filtroCategoria");
-    const selArm = document.getElementById("filtroArmadio");
-    
-    const valCat = selCat.value;
-    const valArm = selArm.value;
-
-    selCat.innerHTML = '<option value="tutti">Tutte le categorie</option>';
-    selArm.innerHTML = '<option value="tutti">Tutti gli armadi</option>';
-    
-    const categorieUniche = [...new Set(inventario.map(i => i.categoria).filter(c => c))].sort();
-    const armadiUnici = [...new Set(inventario.map(i => i.posizione_armadio))].filter(Boolean).sort();
-    
-    categorieUniche.forEach(c => selCat.innerHTML += `<option value="${c}">${c}</option>`);
-    armadiUnici.forEach(a => selArm.innerHTML += `<option value="${a}">${a}</option>`);
-
-    if ([...selCat.options].some(o => o.value == valCat)) selCat.value = valCat;
-    if ([...selArm.options].some(o => o.value == valArm)) selArm.value = valArm;
+// --- LOGICA CATEGORIE ---
+function copiaCategoria() {
+    const sel = document.getElementById("selectCategoriaEsistente");
+    const inp = document.getElementById("inputCategoria");
+    if(sel.value) inp.value = sel.value;
 }
 
 function aggiornaOpzioniCategorie() {
     const sel = document.getElementById("selectCategoriaEsistente");
-    if(sel) {
-        sel.innerHTML = '<option value="">-- Scegli esistente --</option>';
-        const categorieUniche = [...new Set(inventario.map(i => i.categoria).filter(c => c))].sort();
-        categorieUniche.forEach(c => sel.innerHTML += `<option value="${c}">${c}</option>`);
+    if(!sel) return;
+    sel.innerHTML = '<option value="">-- Scegli esistente --</option>';
+    const categorie = [...new Set(listaAttrezzi.map(i => i.categoria).filter(c => c))].sort();
+    categorie.forEach(c => {
+        sel.innerHTML += `<option value="${c}">${c}</option>`;
+    });
+}
+
+// --- FIREBASE ---
+function inizializzaArmadi() {
+    const sel = document.getElementById("selectArmadio");
+    const fil = document.getElementById("filtroArmadioRapido");
+    if(!sel) return;
+    sel.innerHTML = '<option value="">Scegli Armadio...</option>';
+    if(fil) fil.innerHTML = '<option value="tutti">Tutti gli Armadi</option>';
+    if(window.CONFIGURAZIONE && window.CONFIGURAZIONE.armadi) {
+        window.CONFIGURAZIONE.armadi.forEach(arm => {
+            sel.innerHTML += `<option value="${arm.id}">${arm.id} - ${arm.nome}</option>`;
+            if(fil) fil.innerHTML += `<option value="${arm.id}">Armadio ${arm.id}</option>`;
+        });
     }
 }
 
-window.copiaCategoria = function() {
-    const select = document.getElementById("selectCategoriaEsistente");
-    const input = document.getElementById("inputCategoria");
-    if (select.value) input.value = select.value;
-}
-
-window.applicaFiltri = function() {
-    const testo = document.getElementById("cercaNome").value.toLowerCase();
-    const fCat = document.getElementById("filtroCategoria").value;
-    const fArm = document.getElementById("filtroArmadio").value;
-
-    const lista = inventario.filter(obj => {
-        const okNome = obj.nome.toLowerCase().includes(testo);
-        const okCat = fCat === "tutti" || obj.categoria === fCat;
-        const okArm = fArm === "tutti" || obj.posizione_armadio == fArm;
-        return okNome && okArm && okCat;
+dbCollection.onSnapshot((snapshot) => {
+    listaAttrezzi = [];
+    snapshot.forEach((doc) => {
+        listaAttrezzi.push({ ...doc.data(), id: doc.id });
     });
-    renderizzaOggetti(lista);
+    renderizza(listaAttrezzi);
+});
+
+function renderizza(lista) {
+    const container = document.getElementById("listaAttrezzi");
+    container.innerHTML = "";
+    
+    aggiornaOpzioniCategorie();
+
+    if(lista.length === 0) {
+        container.innerHTML = "<p style='text-align:center'>Nessuna attrezzatura trovata.</p>";
+        return;
+    }
+    
+    // Ordina A-Z
+    lista.sort((a,b) => (a.nome || "").toLowerCase().localeCompare((b.nome || "").toLowerCase()));
+
+    lista.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "card";
+        
+        let catHtml = "";
+        if(item.categoria) {
+            catHtml = `<span class="badge-cat">${item.categoria}</span>`;
+        }
+
+        // Mostra Capienza e Sensibilità se presenti
+        let techHtml = "";
+        if(item.capienza || item.sensibilita) {
+            let parts = [];
+            if(item.capienza) parts.push(`Cap: <b>${item.capienza}</b>`);
+            if(item.sensibilita) parts.push(`Sens: <b>${item.sensibilita}</b>`);
+            techHtml = `<div class="tech-details">${parts.join(" - ")}</div>`;
+        }
+
+        div.innerHTML = `
+            <h3>${item.nome}</h3>
+            ${catHtml}
+            ${techHtml}
+            <div style="font-size:0.9em; color:#666; margin-bottom:5px;">
+                Pos: <b>${item.armadio}.${item.ripiano}</b> (Q.${item.quadrante})
+            </div>
+            <div style="margin-bottom:10px;">Qta: <strong>${item.quantita}</strong></div>
+            <div style="display:flex; justify-content:flex-end; align-items:center;">
+                <button class="btn-edit" onclick="apriModifica('${item.id}')">Gestisci</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
 }
 
-// --- GESTIONE MODALE ---
-window.apriModaleNuovo = function() {
-    oggettoCorrenteId = null; 
+function aggiornaRipiani() {
+    const id = document.getElementById("selectArmadio").value;
+    const r = document.getElementById("selectRipiano");
+    r.innerHTML = "<option value=''>Ripiano...</option>"; 
+    r.disabled = true;
+    if(!window.CONFIGURAZIONE) return;
+    const arm = window.CONFIGURAZIONE.armadi.find(a => a.id === id);
+    if(arm) {
+        r.disabled = false;
+        for(let i=1; i<=arm.ripiani; i++) {
+            r.innerHTML += `<option value="${i}">Ripiano ${i}</option>`;
+        }
+    }
+}
+
+function apriModaleNuovo() {
+    idCorrente = null;
     document.getElementById("titoloModale").innerText = "Nuova Attrezzatura";
-    
-    document.getElementById("inputCategoria").value = "";
-    document.getElementById("selectCategoriaEsistente").value = "";
     document.getElementById("inputNome").value = "";
-    document.getElementById("selectArmadio").value = "";
-    document.getElementById("selectRipiano").innerHTML = '<option value="">Ripiano...</option>';
-    document.getElementById("selectRipiano").disabled = true;
-    document.getElementById("inputQuantita").value = 1;
-    document.getElementById("inputSensibilita").value = "";
-    document.getElementById("inputCapienza").value = "";
-    
-    document.getElementById("btnElimina").style.display = "none";
-    document.getElementById("modalModifica").style.display = "block";
-}
-
-window.apriModaleModifica = function(id) {
-    const obj = inventario.find(x => x.id === id);
-    if (!obj) return;
-
-    oggettoCorrenteId = id;
-    document.getElementById("titoloModale").innerText = "Modifica " + obj.nome;
-    
-    document.getElementById("inputCategoria").value = obj.categoria || "";
+    document.getElementById("inputCategoria").value = ""; 
     document.getElementById("selectCategoriaEsistente").value = "";
+    document.getElementById("inputQuantita").value = "";
+    document.getElementById("inputQuadrante").value = "";
+    
+    // Reset Nuovi Campi
+    document.getElementById("inputCapienza").value = "";
+    document.getElementById("inputSensibilita").value = "";
+
+    document.getElementById("selectArmadio").value = "";
+    document.getElementById("selectRipiano").innerHTML = "<option value=''>Ripiano...</option>";
+    document.getElementById("selectRipiano").disabled = true;
+
+    document.getElementById("panelPassword").style.display = "none";
+    document.getElementById("footerNormal").style.display = "flex";
+    document.getElementById("btnMostraPanel").style.display = "none"; 
+    document.getElementById("modalAttrezzo").style.display = "block";
+}
+
+function apriModifica(id) {
+    idCorrente = id;
+    const obj = listaAttrezzi.find(x => x.id === id);
+    if(!obj) return;
+
+    document.getElementById("titoloModale").innerText = "Modifica " + obj.nome;
     document.getElementById("inputNome").value = obj.nome;
+    
+    document.getElementById("inputCategoria").value = obj.categoria || ""; 
+    document.getElementById("selectCategoriaEsistente").value = ""; 
+
     document.getElementById("inputQuantita").value = obj.quantita;
-    document.getElementById("inputSensibilita").value = obj.sensibilita;
-    document.getElementById("inputCapienza").value = obj.capacita;
+    document.getElementById("inputQuadrante").value = obj.quadrante;
+    
+    // Carica Nuovi Campi
+    document.getElementById("inputCapienza").value = obj.capienza || "";
+    document.getElementById("inputSensibilita").value = obj.sensibilita || "";
 
-    const selArm = document.getElementById("selectArmadio");
-    const selRip = document.getElementById("selectRipiano");
+    document.getElementById("selectArmadio").value = obj.armadio;
+    aggiornaRipiani();
+    setTimeout(() => { document.getElementById("selectRipiano").value = obj.ripiano; }, 50);
 
-    selArm.value = obj.posizione_armadio;
-    window.aggiornaRipiani();
-    setTimeout(() => { selRip.value = String(obj.posizione_ripiano); }, 50);
-
-    document.getElementById("btnElimina").style.display = "block";
-    document.getElementById("modalModifica").style.display = "block";
+    document.getElementById("panelPassword").style.display = "none";
+    document.getElementById("footerNormal").style.display = "flex";
+    document.getElementById("btnMostraPanel").style.display = "block"; 
+    document.getElementById("modalAttrezzo").style.display = "block";
 }
 
-window.chiudiModale = function() { document.getElementById("modalModifica").style.display = "none"; }
-window.cambiaQuantita = function(d) {
-    const i = document.getElementById("inputQuantita");
-    i.value = Math.max(0, parseInt(i.value || 0) + d);
+function chiudiModale() {
+    document.getElementById("modalAttrezzo").style.display = "none";
 }
 
-// --- SALVATAGGIO & ELIMINAZIONE AUTOMATICA ---
-window.salvaModifiche = async function() {
-    const categoria = document.getElementById("inputCategoria").value.trim();
-    const nome = document.getElementById("inputNome").value.trim();
-    const armadioId = document.getElementById("selectArmadio").value;
-    const ripianoNum = String(document.getElementById("selectRipiano").value);
-    const qta = parseInt(document.getElementById("inputQuantita").value) || 0;
-    const sens = document.getElementById("inputSensibilita").value.trim();
+function formattaNome(str) {
+    if (!str) return "";
+    return str.toLowerCase().replace(/(^|\s)\S/g, function(lettera) {
+        return lettera.toUpperCase();
+    });
+}
+
+function salvaAttrezzatura() {
+    let nomeGrezzo = document.getElementById("inputNome").value.trim();
+    const nome = formattaNome(nomeGrezzo); 
+    const categoria = document.getElementById("inputCategoria").value.trim(); 
+
+    const arm = document.getElementById("selectArmadio").value;
+    const rip = String(document.getElementById("selectRipiano").value);
+    const quad = document.getElementById("inputQuadrante").value.trim();
+    const qta = document.getElementById("inputQuantita").value.trim();
+    
+    // Nuovi valori
     const cap = document.getElementById("inputCapienza").value.trim();
+    const sens = document.getElementById("inputSensibilita").value.trim();
 
-    if (!nome || !armadioId) { alert("Inserisci Nome e Armadio!"); return; }
+    if(!nome || !arm || !rip) { alert("Dati mancanti!"); return; }
 
     const btn = document.getElementById("btnSalva");
-    btn.innerHTML = "Salvataggio...";
-    btn.disabled = true;
+    btn.innerHTML = "Attendi..."; btn.disabled = true;
+    
+    const customID = generaID(nome, arm, rip, quad);
+    const docRef = dbCollection.doc(customID);
 
-    try {
-        if (oggettoCorrenteId) {
-            // --- MODIFICA ---
-            // SE QUANTITA' <= 0 -> ELIMINA
-            if (qta <= 0) {
-                if(confirm("La quantità è 0. Vuoi eliminare l'oggetto definitivamente?")) {
-                    await deleteDoc(doc(db, "inventario", oggettoCorrenteId));
-                }
-            } else {
-                await updateDoc(doc(db, "inventario", oggettoCorrenteId), {
-                    categoria, nome, posizione_armadio: armadioId, posizione_ripiano: ripianoNum,
-                    quantita: qta, sensibilita: sens, capacita: cap
-                });
+    docRef.get().then((docSnap) => {
+        let esiste = false;
+        if(typeof docSnap.exists === 'function') esiste = docSnap.exists();
+        else esiste = docSnap.exists;
+
+        if (esiste) {
+            if (!idCorrente) {
+                alert(`⛔ ATTENZIONE: "${nome}" ESISTE GIÀ!\n\nSi trova nell'Armadio ${arm}, Ripiano ${rip}.`);
+                return; 
             }
-            window.chiudiModale();
-        } else {
-            // --- NUOVO (Stacking) ---
-            const firmaNuovo = normalizza(nome) + normalizza(armadioId) + normalizza(ripianoNum) + normalizza(cap);
+            if (idCorrente !== customID) {
+                 if(confirm(`Spostando questo oggetto, andrà a unirsi a un "${nome}" già presente.\n\nVuoi unire le quantità?`)) {
+                    return docRef.update({ 
+                        quantita: docSnap.data().quantita + " + " + qta,
+                        nome: nome,
+                        categoria: categoria,
+                        capienza: cap,       // Aggiorna anche questi dati
+                        sensibilita: sens
+                    }).then(() => {
+                        if(idCorrente) return dbCollection.doc(idCorrente).delete();
+                    });
+                } else { throw new Error("Annullato"); }
+            }
+        } 
+        
+        if (!esiste || (esiste && idCorrente === customID)) {
+            const promesse = [];
+            if(idCorrente && idCorrente !== customID) promesse.push(dbCollection.doc(idCorrente).delete());
             
-            const duplicato = inventario.find(obj => {
-                const firmaEsistente = normalizza(obj.nome) + normalizza(obj.posizione_armadio) + normalizza(obj.posizione_ripiano) + normalizza(obj.capacita);
-                return firmaEsistente === firmaNuovo;
-            });
-
-            if(duplicato) {
-                if(confirm(`"${duplicato.nome}" esiste già. Aggiungo +${qta} unità a quello esistente?`)) {
-                    await updateDoc(doc(db, "inventario", duplicato.id), { 
-                        quantita: Number(duplicato.quantita) + qta 
-                    });
-                    window.chiudiModale();
-                }
-            } else {
-                if(qta > 0) {
-                    await addDoc(dbCollection, {
-                        categoria, nome, posizione_armadio: armadioId, posizione_ripiano: ripianoNum,
-                        quantita: qta, sensibilita: sens, capacita: cap
-                    });
-                    window.chiudiModale();
-                } else {
-                    alert("Quantità deve essere maggiore di 0");
-                }
-            }
+            promesse.push(docRef.set({
+                nome: nome, 
+                categoria: categoria,
+                armadio: arm, ripiano: rip, quadrante: quad, 
+                quantita: qta,
+                capienza: cap,      // Salva nuovi dati
+                sensibilita: sens
+            }));
+            return Promise.all(promesse);
         }
-    } catch (e) {
-        console.error("Errore:", e);
-        alert("Errore salvataggio: " + e.message);
-    } finally {
-        btn.innerHTML = 'Salva su Cloud';
-        btn.disabled = false;
-    }
+    }).then(() => { 
+        if(btn.innerHTML !== "Salva") chiudiModale(); 
+    }).catch((e) => {
+        if(e.message !== "Annullato") alert("Errore o Annullato: " + e.message);
+    }).finally(() => { btn.innerHTML = "Salva"; btn.disabled = false; });
 }
 
-// Eliminazione manuale col tasto rosso
-window.eliminaOggettoCorrente = async function() {
-    if(oggettoCorrenteId && confirm("Eliminare definitivamente?")) {
-        await deleteDoc(doc(db, "inventario", oggettoCorrenteId));
-        window.chiudiModale();
-    }
+function generaID(nome, armadio, ripiano, quadrante) {
+    const n = String(nome || "").toLowerCase().trim().replace(/\s+/g, '');
+    const a = String(armadio || "").toLowerCase().trim().replace(/\s+/g, '');
+    const r = String(ripiano || "").toLowerCase().trim().replace(/\s+/g, '');
+    const q = String(quadrante || "").toLowerCase().trim().replace(/\s+/g, '');
+    return `${n}_${a}_${r}_${q}`;
 }
 
-window.onclick = function(e) { if (e.target == document.getElementById("modalModifica")) window.chiudiModale(); }
+function applicaFiltri() {
+    const testo = document.getElementById("cercaAttrezzo").value.toLowerCase();
+    const filtroArm = document.getElementById("filtroArmadioRapido").value;
+    const filtrati = listaAttrezzi.filter(i => {
+        const matchTesto = (i.nome||"").toLowerCase().includes(testo) || 
+                           (i.categoria||"").toLowerCase().includes(testo); 
+        return matchTesto && (filtroArm === "tutti" || i.armadio === filtroArm);
+    });
+    renderizza(filtrati);
+}
+
+// Globali
+window.apriModaleNuovo = apriModaleNuovo;
+window.apriModifica = apriModifica;
+window.chiudiModale = chiudiModale;
+window.salvaAttrezzatura = salvaAttrezzatura;
+window.aggiornaRipiani = aggiornaRipiani;
+window.applicaFiltri = applicaFiltri;
+window.mostraPanelElimina = mostraPanelElimina;
+window.annullaEliminazione = annullaEliminazione;
+window.eseguiEliminazione = eseguiEliminazione;
+window.copiaCategoria = copiaCategoria;
