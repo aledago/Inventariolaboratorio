@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario Chimico</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .modal-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 25px; padding-top: 15px; border-top: 1px solid #eee; }
+        .btn-delete { background-color: #e74c3c; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; display: none; }
+        .btn-delete:hover { background-color: #c0392b; }
+        .btn-save { padding: 10px 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <nav class="navbar">
+            <a href="index.html" class="nav-link">🧪 Attrezzatura</a>
+            <a href="composti.html" class="nav-link active">☣️ Composti Chimici</a>
+            <a href="mappa.html" class="nav-link">🗺️ Mappa</a>
+        </nav>
+
+        <div class="header-row">
+            <h1>Inventario Chimici</h1>
+            <button class="btn-add" onclick="apriModaleNuovo()">
+                <i class="fas fa-plus"></i> Nuovo Composto
+            </button>
+        </div>
+
+        <div class="filter-section">
+            <input type="text" id="cercaChimico" placeholder="Cerca formula o nome..." onkeyup="applicaFiltri()">
+            <select id="filtroArmadioRapido" onchange="applicaFiltri()" style="padding: 10px;">
+                <option value="tutti">Tutti gli Armadi</option>
+            </select>
+        </div>
+
+        <div id="listaChimici" class="grid-container">
+            <p style="text-align:center; width:100%;">Caricamento chimici...</p>
+        </div>
+    </div>
+
+    <div id="modalChimico" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="chiudiModale()">&times;</span>
+            <h2 id="titoloModale">Gestione Composto</h2>
+            
+            <div class="control-group">
+                <label>Nome Sostanza:</label>
+                <input type="text" id="inputNome" placeholder="Es. Acido Solforico">
+            </div>
+            
+            <div class="control-group">
+                <label>Formula Chimica:</label>
+                <input type="text" id="inputFormula" placeholder="Es. H2SO4">
+            </div>
+
+            <label>Posizione:</label>
+            <div class="control-group" style="display: flex; gap: 10px; align-items: flex-end;">
+                <div style="flex: 2;">
+                    <span style="font-size: 0.8em; color: #666;">Armadio</span>
+                    <select id="selectArmadio" onchange="aggiornaRipiani()" style="width: 100%; padding: 8px;">
+                        <option value="">Scegli...</option>
+                    </select>
+                </div>
+                <div style="flex: 2;">
+                    <span style="font-size: 0.8em; color: #666;">Ripiano</span>
+                    <select id="selectRipiano" disabled style="width: 100%; padding: 8px;">
+                        <option value="">...</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <span style="font-size: 0.8em; color: #666;">Quad.</span>
+                    <input type="text" id="inputQuadrante" placeholder="SX" maxlength="3" style="width: 100%;">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Quantità (g/ml):</label>
+                <input type="text" id="inputQuantita" placeholder="Es. 500g">
+            </div>
+
+            <div class="control-group">
+                <label>Link Scheda Sicurezza:</label>
+                <input type="url" id="inputLink" placeholder="URL PDF">
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-delete" id="btnElimina" onclick="eliminaChimicoCorrente()">
+                    <i class="fas fa-trash"></i> Elimina
+                </button>
+                <button class="btn-save" id="btnSalva" onclick="salvaChimico()">
+                    <i class="fas fa-save"></i> Salva
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config_lab.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDjXP6cMEnIJZQdSwz7KE9UVGS65L3p1-I",
+            authDomain: "inventario-lab-rainerum.firebaseapp.com",
+            projectId: "inventario-lab-rainerum",
+            storageBucket: "inventario-lab-rainerum.firebasestorage.app",
+            messagingSenderId: "1089947549262",
+            appId: "1:1089947549262:web:1d02f48d03cada06994d1f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const dbCollection = collection(db, "chimica");
+
+        let listaComposti = [];
+        let idCorrente = null;
+
+        document.addEventListener("DOMContentLoaded", () => { inizializzaArmadi(); });
+
+        // Normalizza stringhe per confronto (ignora case e spazi)
+        function normalizza(str) {
+            return String(str || "").toLowerCase().trim().replace(/\s+/g, '');
+        }
+
+        function inizializzaArmadi() {
+            const selArm = document.getElementById("selectArmadio");
+            const filArm = document.getElementById("filtroArmadioRapido");
+            selArm.innerHTML = '<option value="">Scegli...</option>';
+            filArm.innerHTML = '<option value="tutti">Tutti gli Armadi</option>';
+
+            if(window.CONFIGURAZIONE && window.CONFIGURAZIONE.armadi) {
+                window.CONFIGURAZIONE.armadi.forEach(arm => {
+                    const opt = document.createElement("option");
+                    opt.value = arm.id;
+                    opt.textContent = `${arm.id} - ${arm.nome}`;
+                    selArm.appendChild(opt);
+                    const optF = document.createElement("option");
+                    optF.value = arm.id;
+                    optF.textContent = `Armadio ${arm.id}`;
+                    filArm.appendChild(optF);
+                });
+            }
+        }
+
+        window.aggiornaRipiani = function() {
+            const idArmadio = document.getElementById("selectArmadio").value;
+            const selRip = document.getElementById("selectRipiano");
+            selRip.innerHTML = '<option value="">...</option>';
+            selRip.disabled = true;
+
+            if (!idArmadio || !window.CONFIGURAZIONE) return;
+            const armadio = window.CONFIGURAZIONE.armadi.find(a => a.id === idArmadio);
+            if (armadio) {
+                selRip.disabled = false;
+                for (let i = 1; i <= armadio.ripiani; i++) {
+                    const opt = document.createElement("option");
+                    opt.value = String(i); 
+                    opt.textContent = `Ripiano ${i}`;
+                    selRip.appendChild(opt);
+                }
+            }
+        }
+
+        onSnapshot(dbCollection, (snapshot) => {
+            listaComposti = [];
+            snapshot.forEach((doc) => {
+                const d = doc.data();
+                listaComposti.push({
+                    id: doc.id,
+                    nome: d.nome || "",
+                    formula: d.formula || "",
+                    armadio: d.armadio || "",
+                    ripiano: String(d.ripiano || ""),
+                    quadrante: d.quadrante || "",
+                    quantita: d.quantita || "",
+                    link_sicurezza: d.link_sicurezza || ""
+                });
+            });
+            renderizza(listaComposti);
+        });
+
+        function renderizza(lista) {
+            const container = document.getElementById("listaChimici");
+            container.innerHTML = "";
+            if (lista.length === 0) {
+                container.innerHTML = "<p>Nessun composto trovato.</p>";
+                return;
+            }
+
+            lista.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "card";
+                
+                let htmlLink = "";
+                if(item.link_sicurezza.length > 5) {
+                    htmlLink = `<a href="${item.link_sicurezza}" target="_blank" class="btn-link"><i class="fas fa-file-pdf"></i> Scheda</a>`;
+                }
+
+                const pos = `${item.armadio}.${item.ripiano}${item.quadrante ? '.'+item.quadrante : ''}`;
+
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between;">
+                        <div>
+                            <span style="font-weight:bold; color:#e67e22;">${item.formula}</span>
+                            <h3>${item.nome}</h3>
+                        </div>
+                        <span class="location-badge">${pos}</span>
+                    </div>
+                    <p>Quantità: <strong>${item.quantita}</strong></p>
+                    <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                        ${htmlLink}
+                        <button class="btn-edit" onclick="window.apriModifica('${item.id}')">Gestisci</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.apriModaleNuovo = function() {
+            idCorrente = null;
+            document.getElementById("titoloModale").innerText = "Nuovo Chimico";
+            puliscicampi();
+            document.getElementById("btnElimina").style.display = "none";
+            document.getElementById("modalChimico").style.display = "block";
+        }
+
+        window.apriModifica = function(id) {
+            idCorrente = id;
+            const obj = listaComposti.find(x => x.id === id);
+            if(!obj) { alert("Oggetto non trovato"); return; }
+
+            document.getElementById("titoloModale").innerText = "Modifica " + obj.nome;
+            document.getElementById("inputNome").value = obj.nome;
+            document.getElementById("inputFormula").value = obj.formula;
+            document.getElementById("inputQuantita").value = obj.quantita;
+            document.getElementById("inputLink").value = obj.link_sicurezza;
+            document.getElementById("inputQuadrante").value = obj.quadrante;
+            
+            // Imposta posizione
+            document.getElementById("selectArmadio").value = obj.armadio;
+            window.aggiornaRipiani(); 
+            // Aspetta un istante per impostare il ripiano
+            setTimeout(() => {
+                document.getElementById("selectRipiano").value = String(obj.ripiano);
+            }, 50);
+
+            document.getElementById("btnElimina").style.display = "block";
+            document.getElementById("modalChimico").style.display = "block";
+        }
+
+        window.chiudiModale = function() { document.getElementById("modalChimico").style.display = "none"; }
+        function puliscicampi() {
+            document.getElementById("inputNome").value = "";
+            document.getElementById("inputFormula").value = "";
+            document.getElementById("inputQuantita").value = "";
+            document.getElementById("inputLink").value = "";
+            document.getElementById("selectArmadio").value = "";
+            document.getElementById("selectRipiano").innerHTML = '<option value="">...</option>';
+            document.getElementById("inputQuadrante").value = "";
+        }
+
+        // --- ELIMINA ---
+        window.eliminaChimicoCorrente = async function() {
+            if (!idCorrente) { alert("Errore: ID perso. Ricarica la pagina."); return; }
+            
+            if(confirm("Sei sicuro di eliminare definitivamente questo composto?")) {
+                const btn = document.getElementById("btnElimina");
+                btn.innerHTML = "Eliminazione...";
+                try {
+                    await deleteDoc(doc(db, "chimica", idCorrente));
+                    window.chiudiModale();
+                } catch(e) {
+                    alert("ERRORE FIREBASE: " + e.message + "\nControlla le Regole (Rules) nella console!");
+                } finally {
+                    btn.innerHTML = "Elimina";
+                }
+            }
+        }
+
+        // --- SALVA (STACKING INTELLIGENTE) ---
+        window.salvaChimico = async function() {
+            const nome = document.getElementById("inputNome").value.trim();
+            const formula = document.getElementById("inputFormula").value.trim();
+            const arm = document.getElementById("selectArmadio").value;
+            const rip = String(document.getElementById("selectRipiano").value);
+            const qua = document.getElementById("inputQuadrante").value.trim().toUpperCase();
+            const qta = document.getElementById("inputQuantita").value.trim();
+            const link = document.getElementById("inputLink").value.trim();
+
+            if(!nome || !arm) { alert("Mancano dati obbligatori (Nome/Armadio)"); return; }
+
+            const btn = document.getElementById("btnSalva");
+            btn.innerHTML = "Attendere...";
+            btn.disabled = true;
+
+            try {
+                if(idCorrente) {
+                    // --- MODIFICA ---
+                    // Se quantità è 0 o meno, chiedi di eliminare (OPZIONALE, se vuoi anche qui)
+                    // Per ora solo aggiorna
+                    await updateDoc(doc(db, "chimica", idCorrente), {
+                        nome, formula, armadio: arm, ripiano: rip, quadrante: qua, quantita: qta, link_sicurezza: link
+                    });
+                    window.chiudiModale();
+                } else {
+                    // --- NUOVO (CONTROLLO DUPLICATI) ---
+                    const firmaNuovo = normalizza(nome) + normalizza(arm) + normalizza(rip) + normalizza(qua);
+
+                    const duplicato = listaComposti.find(obj => {
+                        const firmaEsistente = normalizza(obj.nome) + normalizza(obj.armadio) + normalizza(obj.ripiano) + normalizza(obj.quadrante);
+                        return firmaEsistente === firmaNuovo;
+                    });
+
+                    if(duplicato) {
+                        const r = confirm(`"${duplicato.nome}" esiste già lì. Vuoi aggiornare la quantità a "${qta}"?`);
+                        if(r) {
+                            await updateDoc(doc(db, "chimica", duplicato.id), { quantita: qta });
+                            window.chiudiModale();
+                        }
+                    } else {
+                        await addDoc(dbCollection, {
+                            nome, formula, armadio: arm, ripiano: rip, quadrante: qua, quantita: qta, link_sicurezza: link
+                        });
+                        window.chiudiModale();
+                    }
+                }
+            } catch(e) {
+                alert("ERRORE FIREBASE: " + e.message + "\nControlla le Regole di Sicurezza.");
+            } finally {
+                btn.innerHTML = "Salva";
+                btn.disabled = false;
+            }
+        }
+
+        window.applicaFiltri = function() {
+            const testo = document.getElementById("cercaChimico").value.toLowerCase();
+            const armFiltro = document.getElementById("filtroArmadioRapido").value;
+            const filtrati = listaComposti.filter(item => {
+                const n = (item.nome || "").toLowerCase();
+                const f = (item.formula || "").toLowerCase();
+                const matchArmadio = (armFiltro === "tutti") || (item.armadio === armFiltro);
+                return (n.includes(testo) || f.includes(testo)) && matchArmadio;
+            });
+            renderizza(filtrati);
+        }
+
+        window.onclick = function(e) { if (e.target == document.getElementById("modalChimico")) window.chiudiModale(); }
+    </script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Laboratorio</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: none;
+        }
+        .btn-delete:hover { background-color: #c0392b; }
+        .btn-save { padding: 10px 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <nav class="navbar">
+            <a href="index.html" class="nav-link active">🧪 Attrezzatura</a>
+            <a href="composti.html" class="nav-link">☣️ Composti Chimici</a>
+            <a href="mappa.html" class="nav-link">🗺️ Mappa</a>
+        </nav>
+
+        <div class="header-row">
+            <h1>Inventario Attrezzatura</h1>
+            <button class="btn-add" onclick="apriModaleNuovo()">
+                <i class="fas fa-plus"></i> Aggiungi Attrezzatura
+            </button>
+        </div>
+
+        <div class="filter-section">
+            <input type="text" id="cercaNome" placeholder="Cerca oggetto..." onkeyup="applicaFiltri()">
+            
+            <div class="filter-group">
+                <label>Filtra per Categoria:</label>
+                <select id="filtroCategoria" onchange="applicaFiltri()">
+                    <option value="tutti">Tutte le categorie</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Filtra per Armadio:</label>
+                <select id="filtroArmadio" onchange="applicaFiltri()">
+                    <option value="tutti">Tutti gli armadi</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="listaOggetti" class="grid-container">
+            <p style="text-align:center; width:100%;">Caricamento...</p>
+        </div>
+    </div>
+
+    <div id="modalModifica" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="chiudiModale()">&times;</span>
+            <h2 id="titoloModale">Gestione Oggetto</h2>
+            
+            <div class="control-group">
+                <label>Categoria:</label>
+                <div style="display:flex; gap:10px;">
+                    <select id="selectCategoriaEsistente" onchange="copiaCategoria()" style="flex:1;">
+                        <option value="">-- Scegli esistente --</option>
+                    </select>
+                    <input type="text" id="inputCategoria" placeholder="O scrivi nuova..." style="flex:1;">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Nome Strumento:</label>
+                <input type="text" id="inputNome" placeholder="Es. Beuta">
+            </div>
+
+            <div class="control-group">
+                <label>Posizione:</label>
+                <div style="display:flex; gap:10px;">
+                    <select id="selectArmadio" onchange="aggiornaRipiani()" style="flex:1; padding:10px;">
+                        <option value="">Scegli Armadio...</option>
+                    </select>
+                    <select id="selectRipiano" style="flex:1; padding:10px;" disabled>
+                        <option value="">Ripiano...</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Quantità:</label>
+                <div class="quantity-wrapper">
+                    <button class="btn-qty" onclick="cambiaQuantita(-1)"><i class="fas fa-minus"></i></button>
+                    <input type="number" id="inputQuantita" value="0">
+                    <button class="btn-qty" onclick="cambiaQuantita(1)"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Dettagli (Opzionali):</label>
+                <input type="text" id="inputSensibilita" placeholder="Sensibilità (es. ±1 ml)">
+                <input type="number" id="inputCapienza" placeholder="Capienza (es. 100)" style="margin-top:5px;">
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-delete" id="btnElimina" onclick="eliminaOggettoCorrente()">
+                    <i class="fas fa-trash"></i> Elimina
+                </button>
+                <button class="btn-save" id="btnSalva" onclick="salvaModifiche()">
+                    <i class="fas fa-save"></i> Salva su Cloud
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config_lab.js"></script> 
+    <script type="module" src="script.js"></script> 
+</body>
+</html>

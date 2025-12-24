@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mappa Laboratorio</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <a href="index.html" class="nav-link">🧪 Attrezzatura</a>
+            <a href="composti.html" class="nav-link">☣️ Composti Chimici</a>
+            <a href="mappa.html" class="nav-link active">🗺️ Mappa</a>
+        </nav>
+
+        <h1>Piantina Laboratorio</h1>
+        
+        <div id="mappaLaboratorio" class="lab-grid">
+            </div>
+    </div>
+
+    <style>
+        .lab-grid {
+            display: grid;
+            gap: 20px;
+            background: #eee;
+            padding: 20px;
+            border: 2px solid #333;
+            margin-top: 20px;
+        }
+        .grid-item {
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+            transition: transform 0.2s;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+        .grid-item:hover { transform: scale(1.05); border: 2px solid gold; z-index: 10; }
+    </style>
+
+    <script src="config_lab.js"></script>
+
+    <script>
+        // Questo script disegna la mappa leggendo window.CONFIGURAZIONE
+        document.addEventListener("DOMContentLoaded", () => {
+            const grid = document.getElementById("mappaLaboratorio");
+            const conf = window.CONFIGURAZIONE;
+
+            if(!conf) {
+                grid.innerHTML = "Errore: config_lab.js non caricato.";
+                return;
+            }
+
+            // Imposta righe e colonne
+            grid.style.gridTemplateColumns = `repeat(${conf.cols}, 1fr)`;
+            grid.style.gridTemplateRows = `repeat(${conf.rows}, 150px)`;
+
+            conf.armadi.forEach(arm => {
+                const div = document.createElement("div");
+                div.className = "grid-item";
+                div.style.backgroundColor = arm.colore;
+                
+                // Posizionamento CSS Grid
+                div.style.gridColumn = arm.pos_x;
+                div.style.gridRow = arm.pos_y;
+
+                div.innerHTML = `
+                    <i class="fas fa-${arm.tipo === 'cassetto' ? 'layer-group' : 'door-closed'}" style="font-size:2em; margin-bottom:10px;"></i>
+                    <span>${arm.id}</span>
+                    <small style="font-size:0.6em">${arm.nome}</small>
+                `;
+
+                div.onclick = () => {
+                    // Cerca oggetti in questo armadio
+                    alert(`Hai cliccato su ${arm.nome}. In futuro qui si aprirà il contenuto.`);
+                    // window.location.href = `contenuto_armadio.html?id=${arm.id}`;
+                };
+
+                grid.appendChild(div);
+            });
+        });
+    </script>
+</body>
+</html>
