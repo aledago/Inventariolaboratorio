@@ -1,0 +1,49 @@
+/* composti.css - TEMA VIOLA */
+
+/* Navbar Attiva */
+.nav-link.active { background-color: #f5f3ff; color: #7c3aed; font-weight: 600; }
+
+/* Card Style Override */
+.card { 
+    border-left: 6px solid #8b5cf6 !important;
+    border-top: none !important;
+    border-right: none !important;
+    border-bottom: none !important; 
+}
+
+/* Chimica Specifics */
+.formula-text { 
+    font-family: 'Courier New', monospace; font-weight: 700; color: #7c3aed; 
+    background: #f5f3ff; padding: 2px 6px; border-radius: 4px; 
+}
+.scaduto-label { 
+    color: #dc2626; float: right; background: #fef2f2; 
+    padding: 2px 8px; border-radius: 10px; border: 1px solid #fecaca; 
+    font-size: 0.8em; font-weight: bold;
+}
+
+/* Buttons Theme */
+.btn-add { background-color: #7c3aed; }
+.btn-add:hover { background-color: #6d28d9; }
+
+.btn-save {
+    background-color: #7c3aed; color: white; border: none;
+    padding: 10px 24px; border-radius: 8px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 2px 4px rgba(124, 58, 237, 0.3);
+}
+.btn-save:hover { background-color: #6d28d9; }
+
+.btn-edit { 
+    background-color: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; 
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-left: auto; 
+}
+.btn-edit:hover { background-color: #e9d5ff; }
+
+.btn-sds {
+    display: inline-block; margin-top: 10px; padding: 5px 10px;
+    background-color: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe;
+    border-radius: 6px; text-decoration: none; font-size: 0.9em; font-weight: 600;
+}
+
+/* Input Focus */
+.form-control:focus { border-color: #8b5cf6; outline: none; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }

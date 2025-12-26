@@ -1,234 +1,119 @@
-/* --- RESET & BASE --- */
+/* style.css - BASE COMUNE */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f3f4f6; /* Grigio chiarissimo moderno */
-    color: #1f2937; /* Grigio scuro invece di nero puro per leggibilità */
+    background-color: #f3f4f6;
+    color: #1f2937;
     line-height: 1.5;
     padding: 20px;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
+.container { max-width: 1200px; margin: 0 auto; padding-bottom: 50px; }
 
-/* --- NAVBAR MODERNA --- */
+/* NAVBAR */
 .navbar {
-    background: white;
-    padding: 10px 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    margin-bottom: 30px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    background: white; padding: 10px 20px; border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); margin-bottom: 30px;
+    display: flex; align-items: center; gap: 10px;
     justify-content: center;
 }
-
 .nav-link {
-    text-decoration: none;
-    color: #4b5563;
-    font-weight: 500;
-    padding: 10px 16px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    height: 40px;
+    text-decoration: none; color: #4b5563; font-weight: 500; padding: 8px 16px;
+    border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 8px;
 }
+.nav-link:hover { background-color: #f3f4f6; color: #111827; }
 
-.nav-link:hover {
-    background-color: #f9fafb;
-    color: #e67e22; /* Arancione al passaggio */
-}
-
-.nav-link.active {
-    background-color: #fff7ed; /* Sfondo arancione chiarissimo */
-    color: #c2410c; /* Arancione scuro */
-    font-weight: 700;
-}
-
-/* --- HEADER & FILTRI --- */
-.header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-h1 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #111827;
-}
+/* HEADER & FILTRI */
+.header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+h1 { font-size: 1.875rem; font-weight: 700; color: #111827; letter-spacing: -0.025em; }
 
 .btn-add {
-    background-color: #e67e22;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 6px rgba(230, 126, 34, 0.2);
+    color: white; border: none; padding: 10px 20px; font-size: 0.95rem; font-weight: 600;
+    border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: transform 0.1s;
 }
-
-.btn-add:hover {
-    background-color: #d35400;
-}
+.btn-add:active { transform: scale(0.98); }
 
 .filter-section {
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-    display: flex;
-    gap: 15px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    background: white; padding: 15px; border-radius: 12px; margin-bottom: 25px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); display: flex; gap: 15px;
+}
+.filter-section input, .filter-section select {
+    padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; flex: 1; font-size: 0.95rem;
 }
 
-.filter-section input, 
-.filter-section select {
-    padding: 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    flex: 1;
-    font-size: 0.95rem;
-    background-color: #f9fafb;
-    transition: border-color 0.2s;
-}
-.filter-section input:focus, 
-.filter-section select:focus {
-    outline: none;
-    border-color: #e67e22;
-    background-color: white;
-}
-
-/* --- GRIGLIA & CARDS (Base) --- */
+/* GRID CARDS */
 .grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Card leggermente più larghe */
-    gap: 25px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
 }
-
 .card {
-    background: white;
-    border-radius: 16px; /* Angoli più arrotondati */
-    padding: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Ombra soffusa */
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: 1px solid #f3f4f6; /* Bordino sottile per definizione */
+    background: white; border-radius: 12px; padding: 20px;
+    border: 1px solid #e5e7eb; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: flex; flex-direction: column; height: 100%; position: relative;
+    transition: all 0.2s ease-in-out;
 }
+.card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+.card h3 { margin-top: 0; font-size: 1.25rem; font-weight: 600; color: #111827; margin-bottom: 5px; }
 
-.card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+/* BOTTONI COMUNI */
+.btn-save {
+    color: white; border: none; padding: 10px 24px; border-radius: 8px; 
+    font-weight: 600; cursor: pointer; font-size: 1rem; transition: background 0.2s;
 }
-
-.card h3 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 1.25rem;
-    color: #1f2937;
+.btn-edit {
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; margin-left: auto;
+    display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 0.9rem;
 }
-
-/* --- BOTTONI GENERICI --- */
-.btn-edit, .btn-sds {
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.9rem;
-    border: none;
-    transition: background 0.2s;
+.btn-delete {
+    background-color: white; color: #ef4444; border: 1px solid #fecaca;
+    padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s;
 }
+.btn-delete:hover { background-color: #fef2f2; }
 
-/* --- MODALE (Finestra Pop-up) --- */
+/* MODALE */
 .modal {
-    display: none; 
-    position: fixed; 
-    z-index: 1000; 
-    left: 0; top: 0;
-    width: 100%; height: 100%; 
-    background-color: rgba(0,0,0,0.6); /* Sfondo più scuro per focus */
-    backdrop-filter: blur(3px); /* Effetto sfocato sfondo moderno */
+    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+    width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px); align-items: center; justify-content: center;
 }
-
-/* CONTENUTO MODALE SCORREVOLE */
-/* Ho unito le due definizioni che avevi prima in una sola corretta */
 .modal-content {
-    background-color: #fefefe;
-    margin: 3vh auto; 
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    
-    /* Larghezza fissa come nel tuo codice originale */
-    width: 95%;
-    max-width: 550px; 
-
-    /* SCORRIMENTO ATTIVATO */
-    max-height: 90vh; /* Se lo schermo è basso, non esce fuori */
-    overflow-y: auto; /* Appare la barra laterale se serve */
-    
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    animation: slideIn 0.3s ease-out;
+    background-color: white; border-radius: 16px; width: 95%; max-width: 600px; /* Allargato leggermente */
+    max-height: 90vh; overflow-y: auto; position: relative;
+    display: flex; flex-direction: column; animation: slideIn 0.3s ease-out;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
+.modal-header {
+    padding: 20px 25px; border-bottom: 1px solid #f3f4f6;
+    display: flex; justify-content: space-between; align-items: center;
 }
-
-.close-btn {
-    position: absolute;
-    right: 25px;
-    top: 20px;
-    font-size: 28px;
-    color: #9ca3af;
-    cursor: pointer;
-    transition: color 0.2s;
-    z-index: 10; /* Assicura che la X sia cliccabile */
+.modal-body { padding: 25px; overflow-y: auto; }
+.modal-footer {
+    padding: 20px 25px; background-color: #f9fafb; border-top: 1px solid #e5e7eb;
+    margin-top: auto; display: flex; justify-content: flex-end; gap: 10px;
+    border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;
 }
+.close-btn { position: absolute; right: 25px; top: 20px; font-size: 28px; color: #9ca3af; cursor: pointer; z-index: 10; }
 .close-btn:hover { color: #1f2937; }
 
+/* FORM */
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #374151; font-size: 0.9em; }
+.form-control { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; }
+.full-width { grid-column: span 2; }
 
-/* ==============================================================
-   MODIFICA RICHIESTA: RIDUZIONE SPAZI TRA I CAMPI DEL FORM
-   ============================================================== */
-
-/* Riduce lo spazio tra un blocco e l'altro (es. tra Nome e Categoria) */
-.form-group {
-    margin-bottom: 10x; /* Era circa 20px, ora è la metà */
+/* NUOVO: LAYOUT 3 COLONNE PER POSIZIONE */
+.row-3-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
 }
-
-/* Riduce lo spazio tra la scritta (Label) e la casella di testo */
-.form-group label {
-    margin-bottom: 2px;
-    display: block;
-    font-weight: 600;
-    font-size: 0.9rem;
+/* Su mobile tornano a capo */
+@media (max-width: 600px) {
+    .row-3-cols { grid-template-columns: 1fr; }
 }
-
-/* Rende le caselle di testo leggermente più compatte */
-.form-control {
-    padding: 8px 12px; /* Un po' meno padding verticale */
-}
-
-/* Utilità */
-.hidden { display: none !important; }

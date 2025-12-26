@@ -1,8 +1,8 @@
-// --- CONFIGURAZIONE ---
-const PASSWORD_ADMIN = "1234";
+// script_composti.js
 
-// Link Console (Aggiornato a chimica)
-const BASE_URL_DB = "https://console.firebase.google.com/project/inventario-lab-rainerum/firestore/databases/-default-/data/~2Fchimica";
+// Nota: PASSWORD_ADMIN è ora gestita in gestione_comune.js
+// Aggiornato il link per puntare alla nuova cartella
+const BASE_URL_DB = "https://console.firebase.google.com/project/inventario-lab-rainerum/firestore/databases/-default-/data/~2Fcomposti";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDjXP6cMEnIJZQdSwz7KE9UVGS65L3p1-I",
@@ -13,231 +13,192 @@ const firebaseConfig = {
     appId: "1:1089947549262:web:1d02f48d03cada06994d1f"
 };
 
-// Inizializzazione Classica
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// ⚠️ NOME COLLEZIONE CORRETTO: "chimica"
-const dbCollection = db.collection("chimica"); 
+// --- MODIFICA APPLICATA QUI SOTTO ---
+const dbCollection = db.collection("composti"); 
 
 let listaComposti = [];
 let idCorrente = null;
 
 document.addEventListener("DOMContentLoaded", () => {
     inizializzaArmadi();
-    window.onclick = function(e) { 
-        if(e.target == document.getElementById("modalComposto")) chiudiModale(); 
-    }
+    caricaDati();
+    window.onclick = function(e) { if(e.target == document.getElementById("modalComposto")) chiudiModale(); }
 });
 
-// --- FUNZIONI UI ---
+function caricaDati() {
+    dbCollection.get().then((querySnapshot) => {
+        listaComposti = [];
+        querySnapshot.forEach((doc) => { listaComposti.push({ id: doc.id, ...doc.data() }); });
+        renderizza(listaComposti);
+    });
+}
 
 function renderizza(lista) {
-    const container = document.getElementById("listaComposti");
-    container.innerHTML = "";
-    
-    if(lista.length === 0) {
-        container.innerHTML = "<p style='text-align:center; color:#666;'>Nessun composto trovato.</p>";
-        return;
-    }
-
-    // Ordina A-Z
-    lista.sort((a,b) => (a.nome || "").localeCompare(b.nome || ""));
+    const grid = document.getElementById("listaComposti");
+    grid.innerHTML = "";
+    if(lista.length === 0) { grid.innerHTML = "<p>Nessun composto trovato.</p>"; return; }
 
     lista.forEach(item => {
-        const oggi = new Date().toISOString().split('T')[0];
-        const scaduto = item.scadenza && item.scadenza < oggi;
-        
-        let htmlScaduto = "";
-        if(scaduto) htmlScaduto = `<span class="scaduto-label"><i class="fas fa-exclamation-triangle"></i> SCADUTO</span>`;
-
-        let htmlLink = "";
-        if(item.link_sicurezza) {
-            htmlLink = `<a href="${item.link_sicurezza}" target="_blank" class="btn-sds"><i class="fas fa-file-pdf"></i> Scheda SDS</a>`;
+        let coloreArmadio = "#ccc";
+        if(window.CONFIGURAZIONE && window.CONFIGURAZIONE.armadi) {
+            const arm = window.CONFIGURAZIONE.armadi.find(a => a.id === item.armadio);
+            if(arm) coloreArmadio = arm.colore;
         }
 
-        const div = document.createElement("div");
-        div.className = "card";
-        if(scaduto) div.style.borderLeftColor = "#ef4444"; // Rosso se scaduto
-
-        div.innerHTML = `
-            ${htmlScaduto}
-            <h3>${item.nome}</h3>
-            ${item.formula ? `<div class="formula-text">${item.formula}</div>` : ''}
-            
-            <div style="font-size:0.95em; color:#4b5563; margin: 10px 0;">
-                <i class="fas fa-map-marker-alt"></i> 
-                Pos: <b>${item.armadio}.${item.ripiano}</b> (Q.${item.quadrante})
-            </div>
-
-            <div style="font-size:0.9em; margin-bottom:10px;">
-                <i class="far fa-calendar-alt"></i> Scadenza: ${item.scadenza || "N/D"}
-            </div>
-            
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
-                ${htmlLink}
-                <button class="btn-edit" onclick="apriModifica('${item.id}')" style="margin-left:auto;">GESTISCI</button>
-            </div>
-        `;
-        container.appendChild(div);
-    });
-}
-
-function inizializzaArmadi() {
-    const sel = document.getElementById("selectArmadio");
-    const fil = document.getElementById("filtroArmadio");
-    if(!sel) return;
-    
-    sel.innerHTML = "<option value=''>Scegli Armadio...</option>";
-    if(fil) fil.innerHTML = "<option value='tutti'>Tutti gli Armadi</option>";
-
-    if(window.CONFIGURAZIONE && window.CONFIGURAZIONE.armadi) {
-        window.CONFIGURAZIONE.armadi.forEach(arm => {
-            sel.innerHTML += `<option value="${arm.id}">${arm.id} - ${arm.nome}</option>`;
-            if(fil) fil.innerHTML += `<option value="${arm.id}">Armadio ${arm.id}</option>`;
-        });
-    }
-}
-
-function aggiornaRipiani() {
-    const armId = document.getElementById("selectArmadio").value;
-    const ripSel = document.getElementById("selectRipiano");
-    ripSel.innerHTML = "<option value=''>Ripiano...</option>";
-    ripSel.disabled = true;
-
-    if(window.CONFIGURAZIONE) {
-        const arm = window.CONFIGURAZIONE.armadi.find(a => a.id === armId);
-        if(arm) {
-            ripSel.disabled = false;
-            for(let i=1; i<=arm.ripiani; i++) {
-                ripSel.innerHTML += `<option value="${i}">Ripiano ${i}</option>`;
+        let scadenzaHtml = "";
+        if (item.scadenza) {
+            const today = new Date().toISOString().split('T')[0];
+            const dateParts = item.scadenza.split("-");
+            const dataIT = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+            if (item.scadenza < today) {
+                scadenzaHtml = `<span class="scaduto-label"><i class="fas fa-exclamation-triangle"></i> Scaduto (${dataIT})</span>`;
+            } else {
+                scadenzaHtml = `<div style="font-size:0.9em; color:#059669; margin-bottom:5px;"><i class="far fa-calendar-alt"></i> Scadenza: <b>${dataIT}</b></div>`;
             }
         }
-    }
-}
 
-// --- DATABASE ---
-
-dbCollection.onSnapshot((snapshot) => {
-    listaComposti = [];
-    snapshot.forEach((doc) => {
-        listaComposti.push({ ...doc.data(), id: doc.id });
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span class="formula-text">${item.formula || "---"}</span>
+                <span style="background:${coloreArmadio}; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.8em; font-weight:bold;">${item.armadio} - ${item.ripiano}</span>
+            </div>
+            <h3 style="margin:0 0 5px 0; font-size:1.2rem; color:#1f2937;">${item.nome}</h3>
+            ${scadenzaHtml}
+            <div style="font-size:0.9em; color:#555; margin-bottom:10px;"><i class="fas fa-cubes"></i> Quantità: <b>${item.quantita || "N/A"}</b></div>
+            <div style="clear:both; margin-top:5px;">${item.link_sicurezza ? `<a href="${item.link_sicurezza}" target="_blank" class="btn-sds"><i class="fas fa-file-pdf"></i> Scheda Sicurezza</a>` : ''}</div>
+            <div style="margin-top:auto; padding-top:15px; display:flex;">
+                <button class="btn-edit" onclick="apriModifica('${item.id}')"><i class="fas fa-cog"></i> Gestisci</button>
+            </div>
+        `;
+        grid.appendChild(card);
     });
-    filtraComposti(); 
-}, (error) => {
-    console.error("Errore caricamento chimica:", error);
-    document.getElementById("listaComposti").innerHTML = "<p style='color:red; text-align:center'>Errore caricamento (Vedi Console)</p>";
-});
+}
 
 function apriModaleNuovo() {
     idCorrente = null;
     document.getElementById("titoloModale").innerText = "Nuovo Composto";
+    document.getElementById("btnSalva").innerHTML = "SALVA";
+    
+    // Funzioni Comuni
+    annullaEliminazione();
+    document.getElementById("btnMostraPanel").style.display = "none"; 
+
     document.getElementById("inputNome").value = "";
     document.getElementById("inputFormula").value = "";
     document.getElementById("inputScadenza").value = "";
+    document.getElementById("inputQuantita").value = ""; 
     document.getElementById("selectArmadio").value = "";
-    document.getElementById("selectRipiano").innerHTML = "<option value=''>Ripiano...</option>";
-    document.getElementById("selectRipiano").disabled = true;
+    document.getElementById("selectRipiano").innerHTML = ""; document.getElementById("selectRipiano").disabled = true;
     document.getElementById("inputQuadrante").value = "";
     document.getElementById("inputLink").value = "";
-    
-    document.getElementById("btnElimina").style.display = "none";
-    document.getElementById("modalComposto").style.display = "block";
+    document.getElementById("modalComposto").style.display = "flex";
 }
 
 function apriModifica(id) {
     idCorrente = id;
-    const obj = listaComposti.find(o => o.id === id);
-    if(!obj) return;
+    const item = listaComposti.find(i => i.id === id);
+    if (!item) return;
 
-    document.getElementById("titoloModale").innerText = "Modifica " + obj.nome;
-    document.getElementById("inputNome").value = obj.nome;
-    document.getElementById("inputFormula").value = obj.formula || "";
-    document.getElementById("inputScadenza").value = obj.scadenza || "";
-    
-    document.getElementById("selectArmadio").value = obj.armadio;
+    document.getElementById("titoloModale").innerText = "Modifica Composto";
+    document.getElementById("btnSalva").innerHTML = "AGGIORNA";
+
+    // Funzioni Comuni
+    annullaEliminazione();
+    document.getElementById("btnMostraPanel").style.display = "block"; 
+
+    document.getElementById("inputNome").value = item.nome || "";
+    document.getElementById("inputFormula").value = item.formula || "";
+    document.getElementById("inputScadenza").value = item.scadenza || "";
+    document.getElementById("inputQuantita").value = item.quantita || "";
+    document.getElementById("selectArmadio").value = item.armadio || "";
     aggiornaRipiani();
-    setTimeout(() => { document.getElementById("selectRipiano").value = obj.ripiano; }, 50);
-    
-    document.getElementById("inputQuadrante").value = obj.quadrante || "";
-    document.getElementById("inputLink").value = obj.link_sicurezza || "";
-
-    document.getElementById("btnElimina").style.display = "block";
-    document.getElementById("modalComposto").style.display = "block";
+    document.getElementById("selectRipiano").value = item.ripiano || "";
+    document.getElementById("inputQuadrante").value = item.quadrante || "";
+    document.getElementById("inputLink").value = item.link_sicurezza || "";
+    document.getElementById("modalComposto").style.display = "flex";
 }
 
-function chiudiModale() {
-    document.getElementById("modalComposto").style.display = "none";
-}
-
-function eliminaComposto() {
-    if(confirm("Sei sicuro di voler eliminare questo composto?")) {
-         const linkFinale = BASE_URL_DB + "~2F" + idCorrente;
-         window.location.href = linkFinale;
-    }
-}
-
-function generaID(nome, armadio, ripiano, quadrante) {
-    const n = String(nome || "").toLowerCase().trim().replace(/\s+/g, '');
-    const a = String(armadio || "").toLowerCase().trim().replace(/\s+/g, '');
-    const r = String(ripiano || "").toLowerCase().trim().replace(/\s+/g, '');
-    const q = String(quadrante || "").toLowerCase().trim().replace(/\s+/g, '');
-    return `${n}_${a}_${r}_${q}`;
-}
+function chiudiModale() { document.getElementById("modalComposto").style.display = "none"; }
 
 function salvaComposto() {
-    const nome = document.getElementById("inputNome").value.trim();
-    const formula = document.getElementById("inputFormula").value.trim();
-    const scadenza = document.getElementById("inputScadenza").value;
+    const nome = document.getElementById("inputNome").value;
     const arm = document.getElementById("selectArmadio").value;
     const rip = document.getElementById("selectRipiano").value;
-    const qua = document.getElementById("inputQuadrante").value.trim();
-    const link = document.getElementById("inputLink").value.trim();
+    
+    if(!nome || !arm) { alert("Nome e Armadio obbligatori"); return; }
+    const customId = nome.trim().replace(/[\/\s\.]/g, '_'); 
 
-    if(!nome || !arm || !rip) {
-        alert("Inserisci Nome, Armadio e Ripiano.");
-        return;
-    }
+    const dati = {
+        nome: nome,
+        formula: document.getElementById("inputFormula").value,
+        scadenza: document.getElementById("inputScadenza").value,
+        quantita: document.getElementById("inputQuantita").value,
+        armadio: arm,
+        ripiano: rip,
+        quadrante: document.getElementById("inputQuadrante").value,
+        link_sicurezza: document.getElementById("inputLink").value
+    };
 
     const btn = document.getElementById("btnSalva");
-    btn.innerHTML = "Attendi..."; btn.disabled = true;
+    btn.innerHTML = "Salvataggio...";
+    btn.disabled = true;
+    const promesse = [];
+    if (idCorrente && idCorrente !== customId) promesse.push(dbCollection.doc(idCorrente).delete());
+    promesse.push(dbCollection.doc(customId).set(dati));
 
-    const customID = generaID(nome, arm, rip, qua);
-    const docRef = dbCollection.doc(customID);
-
-    docRef.get().then((docSnap) => {
-        let esiste = docSnap.exists;
-
-        if (esiste && (!idCorrente || idCorrente !== customID)) {
-             alert(`ATTENZIONE: "${nome}" esiste già in quella posizione.`);
-             return;
-        }
-
-        const promesse = [];
-        if(idCorrente && idCorrente !== customID) promesse.push(dbCollection.doc(idCorrente).delete());
-
-        promesse.push(docRef.set({
-            nome, formula, scadenza, 
-            armadio: arm, ripiano: rip, quadrante: qua,
-            link_sicurezza: link
-        }));
-
-        return Promise.all(promesse);
-    }).then((res) => {
-        if(res) chiudiModale();
-    }).catch(e => {
-        alert("Errore: " + e.message);
-    }).finally(() => {
-        btn.innerHTML = "SALVA"; btn.disabled = false;
-    });
+    Promise.all(promesse).then(() => {
+        chiudiModale(); caricaDati();
+    }).catch(err => { alert("Errore salvataggio."); }).finally(() => { btn.innerHTML = "SALVA"; btn.disabled = false; });
 }
 
+function eseguiEliminazione() {
+    // Usa la funzione di gestione_comune.js
+    if (verificaPasswordAdmin()) { 
+        if(idCorrente) {
+            dbCollection.doc(idCorrente).delete().then(() => {
+                chiudiModale();
+                caricaDati();
+            }).catch(err => { alert("Errore: " + err); });
+        }
+    }
+}
+
+function inizializzaArmadi() {
+    if (!window.CONFIGURAZIONE) return;
+    const sel = document.getElementById("selectArmadio");
+    const fil = document.getElementById("filtroArmadio");
+    sel.innerHTML = '<option value="">-- Seleziona --</option>';
+    fil.innerHTML = '<option value="tutti">Tutti</option>';
+    window.CONFIGURAZIONE.armadi.forEach(arm => {
+        const opt = document.createElement("option");
+        opt.value = arm.id; opt.text = `${arm.id} - ${arm.nome}`;
+        sel.appendChild(opt);
+        const optFil = document.createElement("option");
+        optFil.value = arm.id; optFil.text = `${arm.id} - ${arm.nome}`;
+        fil.appendChild(optFil);
+    });
+}
+function aggiornaRipiani() {
+    const armId = document.getElementById("selectArmadio").value;
+    const selRip = document.getElementById("selectRipiano");
+    selRip.innerHTML = "";
+    if (!armId) { selRip.disabled = true; return; }
+    const armConf = window.CONFIGURAZIONE.armadi.find(a => a.id === armId);
+    if (armConf) {
+        selRip.disabled = false;
+        for (let i = 1; i <= armConf.ripiani; i++) {
+            const opt = document.createElement("option"); opt.value = i; opt.text = `Ripiano ${i}`; selRip.appendChild(opt);
+        }
+    }
+}
 function filtraComposti() {
     const testo = document.getElementById("cercaComposto").value.toLowerCase();
     const armFiltro = document.getElementById("filtroArmadio").value;
-
     const filtrati = listaComposti.filter(item => {
         const n = (item.nome || "").toLowerCase();
         const f = (item.formula || "").toLowerCase();
@@ -247,11 +208,10 @@ function filtraComposti() {
     renderizza(filtrati);
 }
 
-// Export Globale
 window.apriModaleNuovo = apriModaleNuovo;
 window.apriModifica = apriModifica;
 window.chiudiModale = chiudiModale;
 window.salvaComposto = salvaComposto;
-window.eliminaComposto = eliminaComposto;
+window.eseguiEliminazione = eseguiEliminazione;
 window.aggiornaRipiani = aggiornaRipiani;
 window.filtraComposti = filtraComposti;
