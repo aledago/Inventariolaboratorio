@@ -38,13 +38,20 @@
         const errorMessage = document.getElementById('errorMessage');
 
         btnGoogle.addEventListener('click', () => {
+            if (!window.auth) {
+                console.error("Firebase Auth non inizializzato");
+                errorMessage.innerText = "Errore di sistema: Firebase non caricato.";
+                errorMessage.style.display = 'block';
+                return;
+            }
+
             errorMessage.style.display = 'none';
             btnGoogle.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Accesso in corso...';
             btnGoogle.disabled = true;
 
             const provider = new firebase.auth.GoogleAuthProvider();
             
-            auth.signInWithPopup(provider)
+            window.auth.signInWithPopup(provider)
                 .then((result) => {
                     // Login successo, reindirizza
                     window.location.href = 'index.html';
@@ -62,11 +69,20 @@
         });
 
         // Se già loggato, vai alla home
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                window.location.href = 'index.html';
+        function checkAuthState() {
+            if (window.auth) {
+                window.auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        window.location.href = 'index.html';
+                    }
+                });
+            } else {
+                // Riprova tra poco se non ancora pronto
+                setTimeout(checkAuthState, 100);
             }
-        });
+        }
+        
+        checkAuthState();
     </script>
 </body>
 </html>
