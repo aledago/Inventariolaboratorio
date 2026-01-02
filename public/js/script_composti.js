@@ -4,17 +4,10 @@
 // Aggiornato il link per puntare alla nuova cartella
 const BASE_URL_DB = "https://console.firebase.google.com/project/inventario-lab-rainerum/firestore/databases/-default-/data/~2Fcomposti";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyDjXP6cMEnIJZQdSwz7KE9UVGS65L3p1-I",
-    authDomain: "inventario-lab-rainerum.firebaseapp.com",
-    projectId: "inventario-lab-rainerum",
-    storageBucket: "inventario-lab-rainerum.firebasestorage.app",
-    messagingSenderId: "1089947549262",
-    appId: "1:1089947549262:web:1d02f48d03cada06994d1f"
-};
+// Nota: Firebase è inizializzato in firebase-init.js
+const db = window.db;
 
-if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// La collezione viene recuperata dal db globale
 
 // --- MODIFICA APPLICATA QUI SOTTO ---
 const dbCollection = db.collection("composti"); 
