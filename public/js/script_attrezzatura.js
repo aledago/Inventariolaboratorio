@@ -3,9 +3,6 @@
 // Nota: PASSWORD_ADMIN è ora gestita in gestione_comune.js
 const BASE_URL_DB = "https://console.firebase.google.com/project/inventario-lab-rainerum/firestore/databases/-default-/data/~2Fattrezzature";
 
-// Nota: Firebase è inizializzato in firebase-init.js
-const db = window.db;
-
 // La collezione viene recuperata dal db globale
 const dbCollection = db.collection("attrezzature"); 
 

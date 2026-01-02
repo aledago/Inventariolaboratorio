@@ -4,9 +4,6 @@
 // Aggiornato il link per puntare alla nuova cartella
 const BASE_URL_DB = "https://console.firebase.google.com/project/inventario-lab-rainerum/firestore/databases/-default-/data/~2Fcomposti";
 
-// Nota: Firebase è inizializzato in firebase-init.js
-const db = window.db;
-
 // La collezione viene recuperata dal db globale
 
 // --- MODIFICA APPLICATA QUI SOTTO ---
