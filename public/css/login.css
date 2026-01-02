@@ -58,7 +58,7 @@ body {
 .form-control:focus {
     outline: none;
     border-color: #2563eb;
-    ring: 2px #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .btn-login {
@@ -78,10 +78,38 @@ body {
     background: #1d4ed8;
 }
 
+.btn-google {
+    width: 100%;
+    padding: 12px;
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-google:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.google-icon {
+    width: 20px;
+    height: 20px;
+}
+
 .back-link {
     display: block;
     text-align: center;
-    margin-top: 20px;
+    margin-top: 25px;
     color: #6b7280;
     text-decoration: none;
     font-size: 0.9rem;
