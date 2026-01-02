@@ -13,7 +13,7 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
-const db = firebase.firestore();
+const db = (typeof firebase.firestore === 'function') ? firebase.firestore() : null;
 const auth = firebase.auth();
 
 // Esponi per gli altri script
