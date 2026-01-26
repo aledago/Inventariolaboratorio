@@ -16,5 +16,7 @@ window.CONFIGURAZIONE = {
         { id: "L", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#9bad44ff", pos_x: 1, pos_y: 7, larghezza: 1, altezza: 1 },
         { id: "M", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#9bad44ff", pos_x: 1, pos_y: 8, larghezza: 1, altezza: 1 },
         { id: "N", nome: "Cattedra", tipo: "banco", ripiani: 0, colore: "#000000", pos_x: 6, pos_y: 4, larghezza: 1, altezza: 4 },
+        { id: "O", nome: "Porta", tipo: "Porta", ripiani: 0, colore: "#000000", pos_x: 8, pos_y: 1, larghezza: 1, altezza: 1 },
+        { id: "P", nome: "Parete", tipo: "parete", ripiani: 0, colore: "#00000032", pos_x: 8, pos_y: 2, larghezza: 1, altezza: 7 },
     ]
 };
