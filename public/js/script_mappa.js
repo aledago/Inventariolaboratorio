@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const grid = document.getElementById("mappaLaboratorio");
     const conf = window.CONFIGURAZIONE;
 
-    if(!conf) {
+    if (!conf) {
         grid.innerHTML = "Errore: config_lab.js non caricato.";
         return;
     }
@@ -17,10 +17,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const div = document.createElement("div");
         div.className = "grid-item";
         div.style.backgroundColor = arm.colore;
-        
+
         // Posizionamento CSS Grid
-        div.style.gridColumn = arm.pos_x;
-        div.style.gridRow = arm.pos_y;
+        const w = arm.larghezza || 1;
+        const h = arm.altezza || 1;
+        div.style.gridColumn = `${arm.pos_x} / span ${w}`;
+        div.style.gridRow = `${arm.pos_y} / span ${h}`;
 
         div.innerHTML = `
             <i class="fas fa-${arm.tipo === 'cassetto' ? 'layer-group' : 'door-closed'}" style="font-size:2em; margin-bottom:10px;"></i>

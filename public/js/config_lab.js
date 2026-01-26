@@ -1,13 +1,20 @@
 // config_lab.js
 window.CONFIGURAZIONE = {
-    rows: 3, 
-    cols: 4, 
+    rows: 13,
+    cols: 10,
     armadi: [
-        { id: "A", nome: "Microscopi", tipo: "armadio", ripiani: 4, colore: "#e74c3c", pos_x: 1, pos_y: 1 },
-        
-        { id: "B", nome: "Vetreria", tipo: "cassetto", ripiani: 5, colore: "#3498db", pos_x: 2, pos_y: 1 },
-        { id: "C", nome: "Strumenti", tipo: "armadio", ripiani: 3, colore: "#f1c40f", pos_x: 4, pos_y: 1 },
-        { id: "D", nome: "Scorte", tipo: "sportello", ripiani: 2, colore: "#95a5a6", pos_x: 1, pos_y: 3 },
-        { id: "F", nome: "Acidi", tipo: "armadio", ripiani: 2, colore: "#8e44ad", pos_x: 4, pos_y: 3 }
+        { id: "A", nome: "Microscopi", tipo: "armadio", ripiani: 4, colore: "#e74c3c", pos_x: 1, pos_y: 11, larghezza: 1, altezza: 1 },
+        { id: "B", nome: "Vetreria", tipo: "armadio", ripiani: 4, colore: "#3498db", pos_x: 1, pos_y: 10, larghezza: 1, altezza: 1 },
+        { id: "C", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#f1c40f", pos_x: 1, pos_y: 9, larghezza: 1, altezza: 1 },
+        { id: "D", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#95a5a6", pos_x: 1, pos_y: 8, larghezza: 1, altezza: 1 },
+        { id: "F", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#9bad44ff", pos_x: 2, pos_y: 13, larghezza: 1, altezza: 1 },
+        { id: "G", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#9bad44ff", pos_x: 3, pos_y: 13, larghezza: 1, altezza: 1 },
+        { id: "H", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#9bad44ff", pos_x: 4, pos_y: 13, larghezza: 1, altezza: 1 },
+        { id: "I", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#9bad44ff", pos_x: 5, pos_y: 13, larghezza: 1, altezza: 1 },
+        { id: "J", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#9bad44ff", pos_x: 6, pos_y: 13, larghezza: 1, altezza: 1 },
+        { id: "K", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#9bad44ff", pos_x: 7, pos_y: 13, larghezza: 1, altezza: 1 },
+        { id: "L", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#9bad44ff", pos_x: 8, pos_y: 13, larghezza: 1, altezza: 1 },
+        { id: "M", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#9bad44ff", pos_x: 9, pos_y: 13, larghezza: 1, altezza: 1 },
+        { id: "N", nome: "Cattedra", tipo: "banco", ripiani: 0, colore: "#000000", pos_x: 6, pos_y: 7, larghezza: 4, altezza: 1 },
     ]
 };
