@@ -12,9 +12,29 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    document.getElementById("pageTitle").innerText = `Armadio ${armadioId}`;
+    const armName = applyCabinetColor(armadioId);
+    document.getElementById("pageTitle").innerText = `Armadio ${armadioId} - ${armName}`;
     caricaTuttoArmadio(armadioId);
 });
+
+function applyCabinetColor(armId) {
+    if (!window.CONFIGURAZIONE || !window.CONFIGURAZIONE.armadi) return "Sconosciuto";
+
+    const arm = window.CONFIGURAZIONE.armadi.find(a => a.id === armId);
+    if (!arm) return "Sconosciuto";
+
+    const color = arm.colore || '#3b82f6'; // Default blue
+
+    // Apply to page title border
+    const title = document.getElementById("pageTitle");
+    title.style.borderLeft = `5px solid ${color}`;
+    title.style.paddingLeft = "15px";
+
+    // We can store the color globally or pass it to render functions
+    window.CURRENT_CABINET_COLOR = color;
+
+    return arm.nome;
+}
 
 async function caricaTuttoArmadio(armId) {
     const container = document.getElementById("armadioContent");
@@ -78,7 +98,15 @@ async function caricaTuttoArmadio(armId) {
 
             const title = document.createElement("div");
             title.className = "shelf-title";
-            title.innerHTML = `<i class="fas fa-layer-group"></i> Ripiano ${rip}`;
+
+            // Apply dynamic color
+            const color = window.CURRENT_CABINET_COLOR || '#374151';
+            // Light background
+            title.style.background = `linear-gradient(90deg, ${color}22 0%, #f3f4f6 100%)`; // 22 is hex alpha for ~13%
+            title.style.borderLeft = `4px solid ${color}`;
+            title.style.color = '#1f2937'; // Keep text dark for readability
+
+            title.innerHTML = `<i class="fas fa-layer-group" style="color:${color}"></i> Ripiano ${rip}`;
             section.appendChild(title);
 
             const grid = document.createElement("div");
