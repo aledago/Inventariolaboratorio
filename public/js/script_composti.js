@@ -56,7 +56,7 @@ function renderizza(lista) {
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                 <span class="formula-text">${item.formula || "---"}</span>
-                <span style="background:${coloreArmadio}; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.8em; font-weight:bold;">${item.armadio} - ${item.ripiano}</span>
+                <span style="background:${coloreArmadio}; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.8em; font-weight:bold;">${item.armadio} - ${item.ripiano}${item.posizione ? ' - ' + item.posizione : ''}</span>
             </div>
             <h3 style="margin:0 0 5px 0; font-size:1.2rem; color:#1f2937;">${item.nome}</h3>
             ${scadenzaHtml}

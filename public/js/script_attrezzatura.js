@@ -49,7 +49,7 @@ function renderizza(lista) {
         card.innerHTML = `
             <div class="card-header" style="display:flex; justify-content:space-between; align-items: center; margin-bottom:10px;">
                 <span class="badge-cat" style="margin-bottom:0">${item.categoria || "Generico"}</span>
-                <span style="background:${coloreArmadio}; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.8em; font-weight:bold;">${item.armadio} - ${item.ripiano || "?"}</span>
+                <span style="background:${coloreArmadio}; color:#fff; padding:2px 8px; border-radius:10px; font-size:0.8em; font-weight:bold;">${item.armadio} - ${item.ripiano || "?"}${item.posizione ? ' - ' + item.posizione : ''}</span>
             </div>
             <h3 style="margin: 0 0 10px 0; font-size:1.25rem; color:#1f2937;">${item.nome}</h3>
             <div style="font-size:0.9em; color:#555; margin-bottom:10px;"><i class="fas fa-cubes"></i> Quantità: <b>${item.quantita || 1}</b></div>
