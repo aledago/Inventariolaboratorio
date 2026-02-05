@@ -4,15 +4,15 @@
 const BASE_URL_DB = "https://console.firebase.google.com/project/inventario-lab-rainerum/firestore/databases/-default-/data/~2Fattrezzature";
 
 // La collezione viene recuperata dal db globale
-const dbCollection = db.collection("attrezzature"); 
+const dbCollection = db.collection("attrezzature");
 
 let listaAttrezzi = [];
 let idCorrente = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    inizializzaArmadi(); 
+    inizializzaArmadi();
     caricaDati();
-    window.onclick = function(e) { if(e.target == document.getElementById("modalAttrezzo")) chiudiModale(); }
+    window.onclick = function (e) { if (e.target == document.getElementById("modalAttrezzo")) chiudiModale(); }
 });
 
 function caricaDati() {
@@ -33,17 +33,17 @@ function renderizza(lista) {
 
     lista.forEach(item => {
         let coloreArmadio = "#ccc";
-        if(window.CONFIGURAZIONE && window.CONFIGURAZIONE.armadi) {
+        if (window.CONFIGURAZIONE && window.CONFIGURAZIONE.armadi) {
             const arm = window.CONFIGURAZIONE.armadi.find(a => a.id === item.armadio);
-            if(arm) coloreArmadio = arm.colore;
+            if (arm) coloreArmadio = arm.colore;
         }
         let dettagli = "";
-        if(item.capienza) dettagli += `<span class="tech-details"><i class="fas fa-flask"></i> ${item.capienza}</span>`;
-        if(item.sensibilita) dettagli += `<span class="tech-details"><i class="fas fa-balance-scale"></i> ${item.sensibilita}</span>`;
+        if (item.capienza) dettagli += `<span class="tech-details"><i class="fas fa-flask"></i> ${item.capienza}</span>`;
+        if (item.sensibilita) dettagli += `<span class="tech-details"><i class="fas fa-balance-scale"></i> ${item.sensibilita}</span>`;
 
         const card = document.createElement("div");
         card.className = "card";
-        
+
         // --- QUI C'ERA IL PROBLEMA, ORA RISOLTO CON align-items: center ---
         card.innerHTML = `
             <div class="card-header" style="display:flex; justify-content:space-between; align-items: center; margin-bottom:10px;">
@@ -65,12 +65,13 @@ function apriModaleNuovo() {
     idCorrente = null;
     document.getElementById("titoloModale").innerText = "Nuovo Oggetto";
     document.getElementById("btnSalva").innerHTML = "SALVA";
-    
+
     // Funzioni Comuni
     annullaEliminazione();
-    document.getElementById("btnMostraPanel").style.display = "none"; 
+    document.getElementById("btnMostraPanel").style.display = "none";
 
     document.getElementById("inputNome").value = "";
+    document.getElementById("inputClasse").value = "";
     document.getElementById("selectCategoria").value = "";
     document.getElementById("inputCategoria").style.display = "none";
     document.getElementById("inputQuantita").value = "1";
@@ -92,19 +93,20 @@ function apriModifica(id) {
 
     // Funzioni Comuni
     annullaEliminazione();
-    document.getElementById("btnMostraPanel").style.display = "block"; 
+    document.getElementById("btnMostraPanel").style.display = "block";
 
     document.getElementById("inputNome").value = item.nome || "";
-    
+    document.getElementById("inputClasse").value = item.classe || "";
+
     const selCat = document.getElementById("selectCategoria");
     const inputCat = document.getElementById("inputCategoria");
     let found = false;
-    for(let i=0; i<selCat.options.length; i++) {
-        if(selCat.options[i].value === item.categoria) {
+    for (let i = 0; i < selCat.options.length; i++) {
+        if (selCat.options[i].value === item.categoria) {
             selCat.selectedIndex = i; found = true; break;
         }
     }
-    if(found) { inputCat.style.display = "none"; inputCat.value = item.categoria; } 
+    if (found) { inputCat.style.display = "none"; inputCat.value = item.categoria; }
     else { selCat.value = "nuova"; inputCat.style.display = "block"; inputCat.value = item.categoria || ""; }
 
     document.getElementById("inputQuantita").value = item.quantita || 1;
@@ -123,14 +125,14 @@ function salvaAttrezzatura() {
     const btn = document.getElementById("btnSalva"); btn.innerHTML = "Salvataggio..."; btn.disabled = true;
     const nome = document.getElementById("inputNome").value;
     const arm = document.getElementById("selectArmadio").value;
-    if (!nome || !arm) { alert("Dati mancanti!"); btn.disabled=false; return; }
+    if (!nome || !arm) { alert("Dati mancanti!"); btn.disabled = false; return; }
 
-    const customId = nome.trim().replace(/[\/\s\.]/g, '_'); 
+    const customId = nome.trim().replace(/[\/\s\.]/g, '_');
     const selCat = document.getElementById("selectCategoria");
     let catFinale = (selCat.value === "nuova") ? document.getElementById("inputCategoria").value : selCat.value;
 
     const dati = {
-        nome: nome, categoria: catFinale, quantita: parseInt(document.getElementById("inputQuantita").value) || 1,
+        nome: nome, classe: document.getElementById("inputClasse").value, categoria: catFinale, quantita: parseInt(document.getElementById("inputQuantita").value) || 1,
         armadio: arm, ripiano: document.getElementById("selectRipiano").value,
         quadrante: document.getElementById("inputQuadrante").value,
         capienza: document.getElementById("inputCapienza").value, sensibilita: document.getElementById("inputSensibilita").value,
@@ -145,8 +147,8 @@ function salvaAttrezzatura() {
 
 function eseguiEliminazione() {
     // Funzione helper dal file comune
-    if (verificaPasswordAdmin()) { 
-        if(idCorrente) {
+    if (verificaPasswordAdmin()) {
+        if (idCorrente) {
             dbCollection.doc(idCorrente).delete().then(() => {
                 chiudiModale(); caricaDati();
             });
@@ -158,14 +160,14 @@ function eseguiEliminazione() {
 function popolaSelectCategorie(lista) {
     const select = document.getElementById("selectCategoria");
     const esistenti = new Set();
-    lista.forEach(i => { if(i.categoria) esistenti.add(i.categoria); });
-    
+    lista.forEach(i => { if (i.categoria) esistenti.add(i.categoria); });
+
     select.innerHTML = '<option value="">-- Seleziona --</option>';
     esistenti.forEach(cat => {
         const opt = document.createElement("option");
         opt.value = cat; opt.text = cat; select.appendChild(opt);
     });
-    
+
     const optNew = document.createElement("option");
     optNew.value = "nuova"; optNew.text = "+ Nuova Categoria...";
     optNew.style.fontWeight = "bold"; optNew.style.color = "#ea580c";
@@ -175,7 +177,7 @@ function popolaSelectCategorie(lista) {
 function gestisciInputCategoria(selectElement) {
     const input = document.getElementById("inputCategoria");
     if (selectElement.value === "nuova") {
-        input.style.display = "block"; input.focus(); input.value = ""; 
+        input.style.display = "block"; input.focus(); input.value = "";
     } else {
         input.style.display = "none"; input.value = selectElement.value;
     }
@@ -215,7 +217,7 @@ function applicaFiltri() {
     const testo = document.getElementById("cercaAttrezzo").value.toLowerCase();
     const filtroArm = document.getElementById("filtroArmadioRapido").value;
     const filtrati = listaAttrezzi.filter(i => {
-        const matchTesto = (i.nome||"").toLowerCase().includes(testo) || (i.categoria||"").toLowerCase().includes(testo);
+        const matchTesto = (i.nome || "").toLowerCase().includes(testo) || (i.categoria || "").toLowerCase().includes(testo);
         const matchArm = (filtroArm === "tutti" || i.armadio === filtroArm);
         return matchTesto && matchArm;
     });

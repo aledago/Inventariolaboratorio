@@ -7,7 +7,7 @@ const BASE_URL_DB = "https://console.firebase.google.com/project/inventario-lab-
 // La collezione viene recuperata dal db globale
 
 // --- MODIFICA APPLICATA QUI SOTTO ---
-const dbCollection = db.collection("composti"); 
+const dbCollection = db.collection("composti");
 
 let listaComposti = [];
 let idCorrente = null;
@@ -15,7 +15,7 @@ let idCorrente = null;
 document.addEventListener("DOMContentLoaded", () => {
     inizializzaArmadi();
     caricaDati();
-    window.onclick = function(e) { if(e.target == document.getElementById("modalComposto")) chiudiModale(); }
+    window.onclick = function (e) { if (e.target == document.getElementById("modalComposto")) chiudiModale(); }
 });
 
 function caricaDati() {
@@ -29,13 +29,13 @@ function caricaDati() {
 function renderizza(lista) {
     const grid = document.getElementById("listaComposti");
     grid.innerHTML = "";
-    if(lista.length === 0) { grid.innerHTML = "<p>Nessun composto trovato.</p>"; return; }
+    if (lista.length === 0) { grid.innerHTML = "<p>Nessun composto trovato.</p>"; return; }
 
     lista.forEach(item => {
         let coloreArmadio = "#ccc";
-        if(window.CONFIGURAZIONE && window.CONFIGURAZIONE.armadi) {
+        if (window.CONFIGURAZIONE && window.CONFIGURAZIONE.armadi) {
             const arm = window.CONFIGURAZIONE.armadi.find(a => a.id === item.armadio);
-            if(arm) coloreArmadio = arm.colore;
+            if (arm) coloreArmadio = arm.colore;
         }
 
         let scadenzaHtml = "";
@@ -73,15 +73,16 @@ function apriModaleNuovo() {
     idCorrente = null;
     document.getElementById("titoloModale").innerText = "Nuovo Composto";
     document.getElementById("btnSalva").innerHTML = "SALVA";
-    
+
     // Funzioni Comuni
     annullaEliminazione();
-    document.getElementById("btnMostraPanel").style.display = "none"; 
+    document.getElementById("btnMostraPanel").style.display = "none";
 
     document.getElementById("inputNome").value = "";
+    document.getElementById("inputClasse").value = "";
     document.getElementById("inputFormula").value = "";
     document.getElementById("inputScadenza").value = "";
-    document.getElementById("inputQuantita").value = ""; 
+    document.getElementById("inputQuantita").value = "";
     document.getElementById("selectArmadio").value = "";
     document.getElementById("selectRipiano").innerHTML = ""; document.getElementById("selectRipiano").disabled = true;
     document.getElementById("inputQuadrante").value = "";
@@ -99,9 +100,10 @@ function apriModifica(id) {
 
     // Funzioni Comuni
     annullaEliminazione();
-    document.getElementById("btnMostraPanel").style.display = "block"; 
+    document.getElementById("btnMostraPanel").style.display = "block";
 
     document.getElementById("inputNome").value = item.nome || "";
+    document.getElementById("inputClasse").value = item.classe || "";
     document.getElementById("inputFormula").value = item.formula || "";
     document.getElementById("inputScadenza").value = item.scadenza || "";
     document.getElementById("inputQuantita").value = item.quantita || "";
@@ -119,12 +121,13 @@ function salvaComposto() {
     const nome = document.getElementById("inputNome").value;
     const arm = document.getElementById("selectArmadio").value;
     const rip = document.getElementById("selectRipiano").value;
-    
-    if(!nome || !arm) { alert("Nome e Armadio obbligatori"); return; }
-    const customId = nome.trim().replace(/[\/\s\.]/g, '_'); 
+
+    if (!nome || !arm) { alert("Nome e Armadio obbligatori"); return; }
+    const customId = nome.trim().replace(/[\/\s\.]/g, '_');
 
     const dati = {
         nome: nome,
+        classe: document.getElementById("inputClasse").value,
         formula: document.getElementById("inputFormula").value,
         scadenza: document.getElementById("inputScadenza").value,
         quantita: document.getElementById("inputQuantita").value,
@@ -148,8 +151,8 @@ function salvaComposto() {
 
 function eseguiEliminazione() {
     // Usa la funzione di gestione_comune.js
-    if (verificaPasswordAdmin()) { 
-        if(idCorrente) {
+    if (verificaPasswordAdmin()) {
+        if (idCorrente) {
             dbCollection.doc(idCorrente).delete().then(() => {
                 chiudiModale();
                 caricaDati();
