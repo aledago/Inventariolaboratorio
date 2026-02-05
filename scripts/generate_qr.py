@@ -10,7 +10,7 @@ BASE_URL = "https://inventario-lab-rainerum.web.app"
 CONFIGURAZIONE = {
     "armadi": [
         { "id": "A", "ripiani": 4 },
-        { "id": "B", "ripiani": 4 },
+        { "id": "B", "ripiani": 5 },
         { "id": "C", "ripiani": 4 },
         { "id": "D", "ripiani": 4 },
         { "id": "F", "ripiani": 4 },
