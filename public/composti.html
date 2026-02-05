@@ -54,7 +54,10 @@
 
                 <div class="form-group full-width">
                     <label>Classe Teachable Machine</label>
-                    <input type="text" id="inputClasse" class="form-control" placeholder="Es. acido_solforico">
+                    <select id="selectClasse" class="form-control" onchange="gestisciInputClasse(this)">
+                    </select>
+                    <input type="text" id="inputClasseNuova" class="form-control" placeholder="Nuova Classe..."
+                        style="display:none; margin-top:5px;">
                 </div>
 
                 <div class="form-group">

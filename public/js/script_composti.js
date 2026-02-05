@@ -23,6 +23,7 @@ function caricaDati() {
         listaComposti = [];
         querySnapshot.forEach((doc) => { listaComposti.push({ id: doc.id, ...doc.data() }); });
         renderizza(listaComposti);
+        popolaSelectClasse(listaComposti);
     });
 }
 
@@ -79,7 +80,12 @@ function apriModaleNuovo() {
     document.getElementById("btnMostraPanel").style.display = "none";
 
     document.getElementById("inputNome").value = "";
-    document.getElementById("inputClasse").value = "";
+
+    // Reset Classe
+    document.getElementById("selectClasse").value = "";
+    document.getElementById("inputClasseNuova").style.display = "none";
+    document.getElementById("inputClasseNuova").value = "";
+
     document.getElementById("inputFormula").value = "";
     document.getElementById("inputScadenza").value = "";
     document.getElementById("inputQuantita").value = "";
@@ -103,7 +109,22 @@ function apriModifica(id) {
     document.getElementById("btnMostraPanel").style.display = "block";
 
     document.getElementById("inputNome").value = item.nome || "";
-    document.getElementById("inputClasse").value = item.classe || "";
+
+    // Gestione Dropdown Classe
+    const selClasse = document.getElementById("selectClasse");
+    const inputClasseNuova = document.getElementById("inputClasseNuova");
+    let latFound = false;
+    for (let i = 0; i < selClasse.options.length; i++) {
+        if (selClasse.options[i].value === item.classe) {
+            selClasse.selectedIndex = i; latFound = true; break;
+        }
+    }
+    if (latFound) {
+        inputClasseNuova.style.display = "none"; inputClasseNuova.value = item.classe;
+    } else {
+        selClasse.value = "nuova"; inputClasseNuova.style.display = "block"; inputClasseNuova.value = item.classe || "";
+    }
+
     document.getElementById("inputFormula").value = item.formula || "";
     document.getElementById("inputScadenza").value = item.scadenza || "";
     document.getElementById("inputQuantita").value = item.quantita || "";
@@ -123,11 +144,15 @@ function salvaComposto() {
     const rip = document.getElementById("selectRipiano").value;
 
     if (!nome || !arm) { alert("Nome e Armadio obbligatori"); return; }
+    if (!nome || !arm) { alert("Nome e Armadio obbligatori"); return; }
     const customId = nome.trim().replace(/[\/\s\.]/g, '_');
+
+    const selClasse = document.getElementById("selectClasse");
+    let classeFinale = (selClasse.value === "nuova") ? document.getElementById("inputClasseNuova").value : selClasse.value;
 
     const dati = {
         nome: nome,
-        classe: document.getElementById("inputClasse").value,
+        classe: classeFinale,
         formula: document.getElementById("inputFormula").value,
         scadenza: document.getElementById("inputScadenza").value,
         quantita: document.getElementById("inputQuantita").value,
@@ -201,6 +226,32 @@ function filtraComposti() {
     renderizza(filtrati);
 }
 
+function popolaSelectClasse(lista) {
+    const select = document.getElementById("selectClasse");
+    const esistenti = new Set();
+    lista.forEach(i => { if (i.classe) esistenti.add(i.classe); });
+
+    select.innerHTML = '<option value="">-- Seleziona --</option>';
+    esistenti.forEach(cls => {
+        const opt = document.createElement("option");
+        opt.value = cls; opt.text = cls; select.appendChild(opt);
+    });
+
+    const optNew = document.createElement("option");
+    optNew.value = "nuova"; optNew.text = "+ Nuova Classe...";
+    optNew.style.fontWeight = "bold"; optNew.style.color = "#ea580c";
+    select.appendChild(optNew);
+}
+
+function gestisciInputClasse(selectElement) {
+    const input = document.getElementById("inputClasseNuova");
+    if (selectElement.value === "nuova") {
+        input.style.display = "block"; input.focus(); input.value = "";
+    } else {
+        input.style.display = "none"; input.value = selectElement.value;
+    }
+}
+
 window.apriModaleNuovo = apriModaleNuovo;
 window.apriModifica = apriModifica;
 window.chiudiModale = chiudiModale;
@@ -208,3 +259,4 @@ window.salvaComposto = salvaComposto;
 window.eseguiEliminazione = eseguiEliminazione;
 window.aggiornaRipiani = aggiornaRipiani;
 window.filtraComposti = filtraComposti;
+window.gestisciInputClasse = gestisciInputClasse;

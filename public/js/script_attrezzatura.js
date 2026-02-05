@@ -23,6 +23,7 @@ function caricaDati() {
         querySnapshot.forEach((doc) => { listaAttrezzi.push({ id: doc.id, ...doc.data() }); });
         renderizza(listaAttrezzi);
         popolaSelectCategorie(listaAttrezzi);
+        popolaSelectClasse(listaAttrezzi);
     });
 }
 
@@ -71,7 +72,12 @@ function apriModaleNuovo() {
     document.getElementById("btnMostraPanel").style.display = "none";
 
     document.getElementById("inputNome").value = "";
-    document.getElementById("inputClasse").value = "";
+
+    // Reset Classe
+    document.getElementById("selectClasse").value = "";
+    document.getElementById("inputClasseNuova").style.display = "none";
+    document.getElementById("inputClasseNuova").value = "";
+
     document.getElementById("selectCategoria").value = "";
     document.getElementById("inputCategoria").style.display = "none";
     document.getElementById("inputQuantita").value = "1";
@@ -96,7 +102,21 @@ function apriModifica(id) {
     document.getElementById("btnMostraPanel").style.display = "block";
 
     document.getElementById("inputNome").value = item.nome || "";
-    document.getElementById("inputClasse").value = item.classe || "";
+
+    // Gestione Dropdown Classe
+    const selClasse = document.getElementById("selectClasse");
+    const inputClasseNuova = document.getElementById("inputClasseNuova");
+    let latFound = false;
+    for (let i = 0; i < selClasse.options.length; i++) {
+        if (selClasse.options[i].value === item.classe) {
+            selClasse.selectedIndex = i; latFound = true; break;
+        }
+    }
+    if (latFound) {
+        inputClasseNuova.style.display = "none"; inputClasseNuova.value = item.classe;
+    } else {
+        selClasse.value = "nuova"; inputClasseNuova.style.display = "block"; inputClasseNuova.value = item.classe || "";
+    }
 
     const selCat = document.getElementById("selectCategoria");
     const inputCat = document.getElementById("inputCategoria");
@@ -131,8 +151,11 @@ function salvaAttrezzatura() {
     const selCat = document.getElementById("selectCategoria");
     let catFinale = (selCat.value === "nuova") ? document.getElementById("inputCategoria").value : selCat.value;
 
+    const selClasse = document.getElementById("selectClasse");
+    let classeFinale = (selClasse.value === "nuova") ? document.getElementById("inputClasseNuova").value : selClasse.value;
+
     const dati = {
-        nome: nome, classe: document.getElementById("inputClasse").value, categoria: catFinale, quantita: parseInt(document.getElementById("inputQuantita").value) || 1,
+        nome: nome, classe: classeFinale, categoria: catFinale, quantita: parseInt(document.getElementById("inputQuantita").value) || 1,
         armadio: arm, ripiano: document.getElementById("selectRipiano").value,
         quadrante: document.getElementById("inputQuadrante").value,
         capienza: document.getElementById("inputCapienza").value, sensibilita: document.getElementById("inputSensibilita").value,
@@ -176,6 +199,32 @@ function popolaSelectCategorie(lista) {
 
 function gestisciInputCategoria(selectElement) {
     const input = document.getElementById("inputCategoria");
+    if (selectElement.value === "nuova") {
+        input.style.display = "block"; input.focus(); input.value = "";
+    } else {
+        input.style.display = "none"; input.value = selectElement.value;
+    }
+}
+
+function popolaSelectClasse(lista) {
+    const select = document.getElementById("selectClasse");
+    const esistenti = new Set();
+    lista.forEach(i => { if (i.classe) esistenti.add(i.classe); });
+
+    select.innerHTML = '<option value="">-- Seleziona --</option>';
+    esistenti.forEach(cls => {
+        const opt = document.createElement("option");
+        opt.value = cls; opt.text = cls; select.appendChild(opt);
+    });
+
+    const optNew = document.createElement("option");
+    optNew.value = "nuova"; optNew.text = "+ Nuova Classe...";
+    optNew.style.fontWeight = "bold"; optNew.style.color = "#ea580c";
+    select.appendChild(optNew);
+}
+
+function gestisciInputClasse(selectElement) {
+    const input = document.getElementById("inputClasseNuova");
     if (selectElement.value === "nuova") {
         input.style.display = "block"; input.focus(); input.value = "";
     } else {
@@ -232,3 +281,4 @@ window.eseguiEliminazione = eseguiEliminazione;
 window.aggiornaRipiani = aggiornaRipiani;
 window.applicaFiltri = applicaFiltri;
 window.gestisciInputCategoria = gestisciInputCategoria;
+window.gestisciInputClasse = gestisciInputClasse;
