@@ -91,7 +91,7 @@ function apriModaleNuovo() {
     document.getElementById("inputQuantita").value = "";
     document.getElementById("selectArmadio").value = "";
     document.getElementById("selectRipiano").innerHTML = ""; document.getElementById("selectRipiano").disabled = true;
-    document.getElementById("inputQuadrante").value = "";
+    document.getElementById("inputPosizione").value = "";
     document.getElementById("inputLink").value = "";
     document.getElementById("modalComposto").style.display = "flex";
 }
@@ -131,7 +131,7 @@ function apriModifica(id) {
     document.getElementById("selectArmadio").value = item.armadio || "";
     aggiornaRipiani();
     document.getElementById("selectRipiano").value = item.ripiano || "";
-    document.getElementById("inputQuadrante").value = item.quadrante || "";
+    document.getElementById("inputPosizione").value = item.posizione || "";
     document.getElementById("inputLink").value = item.link_sicurezza || "";
     document.getElementById("modalComposto").style.display = "flex";
 }
@@ -158,7 +158,7 @@ function salvaComposto() {
         quantita: document.getElementById("inputQuantita").value,
         armadio: arm,
         ripiano: rip,
-        quadrante: document.getElementById("inputQuadrante").value,
+        posizione: parseInt(document.getElementById("inputPosizione").value) || null,
         link_sicurezza: document.getElementById("inputLink").value
     };
 

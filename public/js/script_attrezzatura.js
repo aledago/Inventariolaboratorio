@@ -83,7 +83,7 @@ function apriModaleNuovo() {
     document.getElementById("inputQuantita").value = "1";
     document.getElementById("selectArmadio").value = "";
     document.getElementById("selectRipiano").innerHTML = ""; document.getElementById("selectRipiano").disabled = true;
-    document.getElementById("inputQuadrante").value = "";
+    document.getElementById("inputPosizione").value = "";
     document.getElementById("inputCapienza").value = "";
     document.getElementById("inputSensibilita").value = "";
     document.getElementById("modalAttrezzo").style.display = "flex";
@@ -130,7 +130,7 @@ function apriModifica(id) {
     else { selCat.value = "nuova"; inputCat.style.display = "block"; inputCat.value = item.categoria || ""; }
 
     document.getElementById("inputQuantita").value = item.quantita || 1;
-    document.getElementById("inputQuadrante").value = item.quadrante || "";
+    document.getElementById("inputPosizione").value = item.posizione || "";
     document.getElementById("inputCapienza").value = item.capienza || "";
     document.getElementById("inputSensibilita").value = item.sensibilita || "";
     const selArm = document.getElementById("selectArmadio"); selArm.value = item.armadio;
@@ -157,7 +157,7 @@ function salvaAttrezzatura() {
     const dati = {
         nome: nome, classe: classeFinale, categoria: catFinale, quantita: parseInt(document.getElementById("inputQuantita").value) || 1,
         armadio: arm, ripiano: document.getElementById("selectRipiano").value,
-        quadrante: document.getElementById("inputQuadrante").value,
+        posizione: parseInt(document.getElementById("inputPosizione").value) || null,
         capienza: document.getElementById("inputCapienza").value, sensibilita: document.getElementById("inputSensibilita").value,
         data_modifica: firebase.firestore.FieldValue.serverTimestamp()
     };
