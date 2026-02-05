@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizzazione Armadio</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .shelf-section {
+            margin-bottom: 40px;
+        }
+
+        .shelf-title {
+            background: #e5e7eb;
+            color: #374151;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .position-badge {
+            background: #f3f4f6;
+            color: #1f2937;
+            border: 2px solid #e5e7eb;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header-row">
+            <button class="btn-back" onclick="window.location.href='mappa.html'"
+                style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#4b5563;">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 style="flex-grow:1; text-align:center;" id="pageTitle">Dettaglio Armadio</h1>
+            <div style="width:40px;"></div>
+        </div>
+
+        <div id="loading" style="text-align:center; padding:20px;">Caricamento...</div>
+        <div id="armadioContent">
+            <!-- Content injected via JS -->
+        </div>
+
+    </div>
+
+    <script src="js/config_lab.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="js/firebase-init.js"></script>
+
+    <script src="js/script_armadio.js"></script>
+</body>
+
+</html>

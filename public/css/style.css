@@ -114,6 +114,15 @@ h1 { font-size: 1.875rem; font-weight: 700; color: #111827; letter-spacing: -0.0
     margin-bottom: 15px;
 }
 /* Su mobile tornano a capo */
+/* Su mobile tornano a capo */
 @media (max-width: 600px) {
     .row-3-cols { grid-template-columns: 1fr; }
+    .header-row { flex-direction: column; gap: 15px; text-align: center; }
+    .filter-section { flex-direction: column; }
+    .container { padding-left: 15px; padding-right: 15px; }
+    .grid-container { grid-template-columns: 1fr; } /* Force single column on small mobile */
+}
+
+@media (min-width: 601px) and (max-width: 1024px) {
+    .grid-container { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 }

@@ -1,6 +1,10 @@
 /* mappa.css - GRIGLIA */
 
-.nav-link.active { background-color: #e5e7eb; color: #374151; font-weight: 600; }
+.nav-link.active {
+    background-color: #e5e7eb;
+    color: #374151;
+    font-weight: 600;
+}
 
 .lab-grid {
     display: grid;
@@ -10,6 +14,26 @@
     border: 2px solid #333;
     margin-top: 20px;
     border-radius: 8px;
+    /* Responsive map */
+    overflow-x: auto;
+    /* Optional: min-width to trigger scroll if rows/cols are fixed size in JS */
+}
+
+/* Container wrapper specifically for map if needed, but lab-grid handles scroll */
+@media (max-width: 768px) {
+    .lab-grid {
+        display: grid;
+        /* Ensure the grid doesn't shrink too much, forcing scroll */
+        min-width: 800px;
+    }
+
+    /* Wrap the grid in the html with a div if we want the scrollbar on the div, 
+       but here applying overflow to the grid container itself works if it has fixed width content 
+    */
+    #mappaLaboratorio {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 }
 
 .grid-item {
@@ -21,9 +45,13 @@
     cursor: pointer;
     color: white;
     font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     transition: transform 0.2s;
     text-align: center;
     padding: 10px;
 }
-.grid-item:hover { transform: scale(1.05); z-index: 10; }
+
+.grid-item:hover {
+    transform: scale(1.05);
+    z-index: 10;
+}

@@ -31,7 +31,8 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
 
         div.onclick = () => {
-            alert(`Hai cliccato su ${arm.nome}.`);
+            // alert(`Hai cliccato su ${arm.nome}.`);
+            window.location.href = `armadio.html?id=${arm.id}`;
         };
 
         grid.appendChild(div);
