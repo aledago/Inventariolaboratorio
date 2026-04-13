@@ -6,7 +6,7 @@ window.CONFIGURAZIONE = {
         { id: "A", nome: "Microscopi", tipo: "armadio", ripiani: 4, colore: "#ff0000", pos_x: 3, pos_y: 1, larghezza: 1, altezza: 1 },
         { id: "B", nome: "Vetreria", tipo: "armadio", ripiani: 5, colore: "#096909", pos_x: 4, pos_y: 1, larghezza: 1, altezza: 1 },
         { id: "C", nome: "Pipette/attrezzi", tipo: "armadio", ripiani: 5, colore: "#0000ff", pos_x: 5, pos_y: 1, larghezza: 1, altezza: 1 },
-        { id: "D", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#fff200ff", pos_x: 6, pos_y: 1, larghezza: 1, altezza: 1 },
+        { id: "D", nome: "Strumenti", tipo: "armadio", ripiani: 9, colore: "rgb(253, 202, 0)", pos_x: 6, pos_y: 1, larghezza: 1, altezza: 1 },
         { id: "F", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#ff009dff", pos_x: 1, pos_y: 1, larghezza: 1, altezza: 1 },
         { id: "G", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#ff009dff", pos_x: 1, pos_y: 2, larghezza: 1, altezza: 1 },
         { id: "H", nome: "Strumenti", tipo: "armadio", ripiani: 4, colore: "#ff009dff", pos_x: 1, pos_y: 3, larghezza: 1, altezza: 1 },
