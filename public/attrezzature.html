@@ -28,10 +28,16 @@
             </button>
         </div>
 
-        <div class="filter-section">
-            <input type="text" id="cercaAttrezzo" placeholder="Cerca attrezzatura..." onkeyup="applicaFiltri()">
+        <div class="filter-section" style="flex-wrap: wrap;">
+            <input type="text" id="cercaAttrezzo" placeholder="🔍 Cerca attrezzatura..." onkeyup="applicaFiltri()">
             <select id="filtroArmadioRapido" onchange="applicaFiltri()">
                 <option value="tutti">Tutti gli Armadi</option>
+            </select>
+            <select id="filtroCategoriaRapido" onchange="applicaFiltri()">
+                <option value="tutti">Tutte le Categorie</option>
+            </select>
+            <select id="filtroClasseRapido" onchange="applicaFiltri()">
+                <option value="tutti">Tutte le Classi</option>
             </select>
         </div>
 

@@ -21,9 +21,11 @@ function caricaDati() {
     dbCollection.get().then((querySnapshot) => {
         listaAttrezzi = [];
         querySnapshot.forEach((doc) => { listaAttrezzi.push({ id: doc.id, ...doc.data() }); });
-        renderizza(listaAttrezzi);
         popolaSelectCategorie(listaAttrezzi);
         popolaSelectClasse(listaAttrezzi);
+        popolaFiltroCategoriaRapido(listaAttrezzi);
+        popolaFiltroClasseRapido(listaAttrezzi);
+        applicaFiltri();
     });
 }
 
@@ -265,12 +267,51 @@ function aggiornaRipiani() {
 function applicaFiltri() {
     const testo = document.getElementById("cercaAttrezzo").value.toLowerCase();
     const filtroArm = document.getElementById("filtroArmadioRapido").value;
+    const filtroCat = document.getElementById("filtroCategoriaRapido").value;
+    const filtroClasse = document.getElementById("filtroClasseRapido").value;
     const filtrati = listaAttrezzi.filter(i => {
         const matchTesto = (i.nome || "").toLowerCase().includes(testo) || (i.categoria || "").toLowerCase().includes(testo);
         const matchArm = (filtroArm === "tutti" || i.armadio === filtroArm);
-        return matchTesto && matchArm;
+        const matchCat = (filtroCat === "tutti" || (i.categoria || "") === filtroCat);
+        const matchClasse = (filtroClasse === "tutti" || (i.classe || "") === filtroClasse);
+        return matchTesto && matchArm && matchCat && matchClasse;
     });
     renderizza(filtrati);
+}
+
+function popolaFiltroCategoriaRapido(lista) {
+    const sel = document.getElementById("filtroCategoriaRapido");
+    const valoreCorrente = sel.value;
+    const categorie = new Set();
+    lista.forEach(i => { if (i.categoria) categorie.add(i.categoria); });
+    sel.innerHTML = '<option value="tutti">Tutte le Categorie</option>';
+    Array.from(categorie).sort().forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat; opt.text = cat; sel.appendChild(opt);
+    });
+    // Ripristina il valore selezionato se ancora valido
+    if (valoreCorrente && valoreCorrente !== "tutti") {
+        for (let i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === valoreCorrente) { sel.value = valoreCorrente; break; }
+        }
+    }
+}
+
+function popolaFiltroClasseRapido(lista) {
+    const sel = document.getElementById("filtroClasseRapido");
+    const valoreCorrente = sel.value;
+    const classi = new Set();
+    lista.forEach(i => { if (i.classe) classi.add(i.classe); });
+    sel.innerHTML = '<option value="tutti">Tutte le Classi</option>';
+    Array.from(classi).sort().forEach(cls => {
+        const opt = document.createElement("option");
+        opt.value = cls; opt.text = cls; sel.appendChild(opt);
+    });
+    if (valoreCorrente && valoreCorrente !== "tutti") {
+        for (let i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === valoreCorrente) { sel.value = valoreCorrente; break; }
+        }
+    }
 }
 
 window.apriModaleNuovo = apriModaleNuovo;

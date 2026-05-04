@@ -22,8 +22,9 @@ function caricaDati() {
     dbCollection.get().then((querySnapshot) => {
         listaComposti = [];
         querySnapshot.forEach((doc) => { listaComposti.push({ id: doc.id, ...doc.data() }); });
-        renderizza(listaComposti);
         popolaSelectClasse(listaComposti);
+        popolaFiltroClasseRapido(listaComposti);
+        filtraComposti();
     });
 }
 
@@ -217,13 +218,32 @@ function aggiornaRipiani() {
 function filtraComposti() {
     const testo = document.getElementById("cercaComposto").value.toLowerCase();
     const armFiltro = document.getElementById("filtroArmadio").value;
+    const filtroClasse = document.getElementById("filtroClasseRapido").value;
     const filtrati = listaComposti.filter(item => {
         const n = (item.nome || "").toLowerCase();
         const f = (item.formula || "").toLowerCase();
         const matchArmadio = (armFiltro === "tutti") || (item.armadio === armFiltro);
-        return (n.includes(testo) || f.includes(testo)) && matchArmadio;
+        const matchClasse = (filtroClasse === "tutti") || ((item.classe || "") === filtroClasse);
+        return (n.includes(testo) || f.includes(testo)) && matchArmadio && matchClasse;
     });
     renderizza(filtrati);
+}
+
+function popolaFiltroClasseRapido(lista) {
+    const sel = document.getElementById("filtroClasseRapido");
+    const valoreCorrente = sel.value;
+    const classi = new Set();
+    lista.forEach(i => { if (i.classe) classi.add(i.classe); });
+    sel.innerHTML = '<option value="tutti">Tutte le Classi</option>';
+    Array.from(classi).sort().forEach(cls => {
+        const opt = document.createElement("option");
+        opt.value = cls; opt.text = cls; sel.appendChild(opt);
+    });
+    if (valoreCorrente && valoreCorrente !== "tutti") {
+        for (let i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === valoreCorrente) { sel.value = valoreCorrente; break; }
+        }
+    }
 }
 
 function popolaSelectClasse(lista) {

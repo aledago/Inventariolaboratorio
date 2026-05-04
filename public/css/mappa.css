@@ -6,38 +6,33 @@
     font-weight: 600;
 }
 
-.lab-grid {
-    display: grid;
-    gap: 20px;
-    background: #eee;
-    padding: 20px;
-    border: 2px solid #333;
-    margin-top: 20px;
-    border-radius: 8px;
-    /* Responsive map */
+/* Wrapper per scroll orizzontale su mobile */
+.map-scroll-wrapper {
     overflow-x: auto;
-    /* Optional: min-width to trigger scroll if rows/cols are fixed size in JS */
+    -webkit-overflow-scrolling: touch;
+    margin-top: 15px;
+    border-radius: 10px;
+    border: 2px solid #d1d5db;
+    background: #f0f0f0;
 }
 
-/* Container wrapper specifically for map if needed, but lab-grid handles scroll */
+.lab-grid {
+    display: grid;
+    gap: 8px;
+    background: #f0f0f0;
+    padding: 12px;
+    border-radius: 8px;
+    min-width: 600px;
+}
+
 @media (max-width: 768px) {
     .lab-grid {
-        display: grid;
-        /* Ensure the grid doesn't shrink too much, forcing scroll */
-        min-width: 800px;
-    }
-
-    /* Wrap the grid in the html with a div if we want the scrollbar on the div, 
-       but here applying overflow to the grid container itself works if it has fixed width content 
-    */
-    #mappaLaboratorio {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        min-width: 550px;
     }
 }
 
 .grid-item {
-    border-radius: 8px;
+    border-radius: 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -45,13 +40,34 @@
     cursor: pointer;
     color: white;
     font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s, box-shadow 0.15s;
     text-align: center;
-    padding: 10px;
+    padding: 4px 2px;
+    line-height: 1.2;
 }
 
 .grid-item:hover {
-    transform: scale(1.05);
+    transform: scale(1.08);
     z-index: 10;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Legenda compatta */
+.legenda-container {
+    margin-top: 15px;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.legenda-container h3 {
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+}
+.legenda-container p {
+    font-size: 0.82rem;
+    color: #6b7280;
+    line-height: 1.5;
 }

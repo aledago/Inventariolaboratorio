@@ -28,10 +28,13 @@
             </button>
         </div>
 
-        <div class="filter-section">
-            <input type="text" id="cercaComposto" placeholder="Cerca nome o formula..." onkeyup="filtraComposti()">
+        <div class="filter-section" style="flex-wrap: wrap;">
+            <input type="text" id="cercaComposto" placeholder="🔍 Cerca nome o formula..." onkeyup="filtraComposti()">
             <select id="filtroArmadio" onchange="filtraComposti()">
-                <option value="tutti">Tutti</option>
+                <option value="tutti">Tutti gli Armadi</option>
+            </select>
+            <select id="filtroClasseRapido" onchange="filtraComposti()">
+                <option value="tutti">Tutte le Classi</option>
             </select>
         </div>
 

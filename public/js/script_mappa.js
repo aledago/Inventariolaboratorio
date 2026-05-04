@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Imposta righe e colonne
     grid.style.gridTemplateColumns = `repeat(${conf.cols}, 1fr)`;
-    grid.style.gridTemplateRows = `repeat(${conf.rows}, 150px)`;
+    grid.style.gridTemplateRows = `repeat(${conf.rows}, 70px)`;
 
     conf.armadi.forEach(arm => {
         const div = document.createElement("div");
@@ -25,9 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
         div.style.gridRow = `${arm.pos_y} / span ${h}`;
 
         div.innerHTML = `
-            <i class="fas fa-${arm.tipo === 'cassetto' ? 'layer-group' : 'door-closed'}" style="font-size:2em; margin-bottom:10px;"></i>
-            <span>${arm.id}</span>
-            <small style="font-size:0.6em">${arm.nome}</small>
+            <i class="fas fa-${arm.tipo === 'cassetto' ? 'layer-group' : 'door-closed'}" style="font-size:1.1em; margin-bottom:2px;"></i>
+            <span style="font-size:0.85em;">${arm.id}</span>
+            <small style="font-size:0.55em; line-height:1.1;">${arm.nome}</small>
         `;
 
         div.onclick = () => {
